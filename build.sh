@@ -92,3 +92,5 @@ CXX="$CLANGXX $CXXVER $OPTLEVEL -Wall -Wextra "
 $CXX token_allocate.cpp -o token_allocate.x64.exe && valgrind ./token_allocate.x64.exe
 
 $CXX -g0 -O3 -DNDEBUG token_codegen.cpp -S -emit-llvm -o token_allocate.x64.ll
+
+$LLC token_allocate.x64.ll -o token_allocate.x64.s
