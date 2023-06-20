@@ -15,6 +15,7 @@ template <uint32_t N> struct token_allocate {
   token_allocate() {
     _Static_assert(N != 0, "");
     _Static_assert(N != UINT32_MAX, "");
+    _Static_assert(N != UINT32_MAX/2, "");
     _Static_assert((N & (N - 1)) == 0, "N is power of two");
   }
 
@@ -28,7 +29,7 @@ template <uint32_t N> struct token_allocate {
     return index + (value >> 1u);
   }
 
-  bool element_available(uint32_t v) { return (v & 1) == 0; }
+  static bool element_available(uint32_t v) { return (v & 1) == 0; }
 
   void dump() {
     printf("Head %u Tail %u N %u\n", head, tail, N);
