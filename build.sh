@@ -84,6 +84,8 @@ LINK="$RDIR/bin/llvm-link"
 OPT="$RDIR/bin/opt"
 EXTRACT="$RDIR/bin/llvm-extract"
 
+HSAINC="$RDIR/hsa/include/"
+
 CXXVER='-std=c++17'
 OPTLEVEL='-O0 -g -gdwarf-4 '
 
@@ -94,3 +96,6 @@ $CXX token_allocate.cpp -o token_allocate.x64.exe && valgrind ./token_allocate.x
 $CXX -g0 -O3 -DNDEBUG token_codegen.cpp -S -emit-llvm -o token_allocate.x64.ll
 
 $LLC token_allocate.x64.ll -o token_allocate.x64.s
+
+
+$CXX -I$HSAINC -Illvm_loader llvm_loader/amdgpu/Loader.cpp llvm_loader/Main.cpp -o amdgpu_loader.exe
