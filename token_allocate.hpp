@@ -14,9 +14,7 @@
 template <uint32_t N> struct token_allocate {
   token_allocate() {
     _Static_assert(N != 0, "");
-    _Static_assert(N != UINT32_MAX, "");
-    _Static_assert(N != UINT32_MAX/2, "");
-    _Static_assert((N & (N - 1)) == 0, "N is power of two");
+    _Static_assert(N < UINT32_MAX/2, "");
   }
 
   static void inc(uint32_t &x) { x = (x + 1u) % N; }
