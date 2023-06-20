@@ -85,8 +85,8 @@ OPT="$RDIR/bin/opt"
 EXTRACT="$RDIR/bin/llvm-extract"
 
 CXXVER='-std=c++17'
-OPTLEVEL='-O2'
+OPTLEVEL='-O0 -g -gdwarf-4 '
 
-CXX="$CLANGXX $CXXVER -Wall -Wextra "
+CXX="$CLANGXX $CXXVER $OPTLEVEL -Wall -Wextra "
 
-$CXX token_allocate.cpp -o token_allocate.x64.exe && ./token_allocate.x64.exe
+$CXX token_allocate.cpp -o token_allocate.x64.exe && valgrind ./token_allocate.x64.exe
