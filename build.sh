@@ -101,5 +101,6 @@ $CXX -g0 -O3 -DNDEBUG token_codegen.cpp -S -emit-llvm -o token_allocate.x64.ll
 
 $LLC token_allocate.x64.ll -o token_allocate.x64.s
 
+LIBCINC="-Ilibc -Ilibc/include -Ilibc/utils/gpu/loader "
 
-$CXX $LDFLAGS -I$HSAINC -Ilibc -Ilibc/include -Ilibc/utils/gpu/loader  libc/utils/gpu/loader/amdgpu/Loader.cpp libc/utils/gpu/loader/Main.cpp -o amdgpu_loader.exe
+$CXX $LDFLAGS -I$HSAINC $LIBCINC  libc/utils/gpu/loader/amdgpu/Loader.cpp libc/utils/gpu/loader/Main.cpp libc/utils/gpu/server/Server.cpp -o amdgpu_loader.exe
