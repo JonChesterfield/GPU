@@ -9,11 +9,7 @@
 #ifndef LLVM_LIBC_UTILS_GPU_LOADER_LOADER_H
 #define LLVM_LIBC_UTILS_GPU_LOADER_LOADER_H
 
-#define WITHSERVER 1
-
-#if !WITHSERVER
 #include "utils/gpu/server/Server.h"
-#endif
 
 #include <cstddef>
 #include <cstdint>
@@ -105,10 +101,8 @@ inline void handle_error(const char *msg) {
   exit(EXIT_FAILURE);
 }
 
-#if !WITHSERVER
 inline void handle_error(rpc_status_t) {
   handle_error("Failure in the RPC server\n");
 }
-#endif
 
 #endif

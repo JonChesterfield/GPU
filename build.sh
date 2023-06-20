@@ -85,6 +85,10 @@ OPT="$RDIR/bin/opt"
 EXTRACT="$RDIR/bin/llvm-extract"
 
 HSAINC="$RDIR/hsa/include/"
+HSALIBDIR="$RDIR/lib"
+HSALIB="$HSALIBDIR/libhsa-runtime64.so" # $RDIR/lib/libomptarget.rtl.hsa.so"
+
+LDFLAGS="$HSALIB -Wl,-rpath=$HSALIBDIR -lelf"
 
 CXXVER='-std=c++17'
 OPTLEVEL='-O0 -g -gdwarf-4 '
@@ -98,4 +102,4 @@ $CXX -g0 -O3 -DNDEBUG token_codegen.cpp -S -emit-llvm -o token_allocate.x64.ll
 $LLC token_allocate.x64.ll -o token_allocate.x64.s
 
 
-$CXX -I$HSAINC -Illvm_loader llvm_loader/amdgpu/Loader.cpp llvm_loader/Main.cpp -o amdgpu_loader.exe
+$CXX $LDFLAGS -I$HSAINC -Ilibc -Ilibc/include -Ilibc/utils/gpu/loader  libc/utils/gpu/loader/amdgpu/Loader.cpp libc/utils/gpu/loader/Main.cpp -o amdgpu_loader.exe
