@@ -395,6 +395,7 @@ LIBC_INLINE void Port<T, S>::recv_and_send(W work) {
 
 /// Helper routine to simplify the interface when sending from the GPU using
 /// thread private pointers to the underlying value.
+#if defined(LIBC_TARGET_ARCH_IS_GPU)
 template <bool T, uint32_t S>
 LIBC_INLINE void Port<T, S>::send_n(const void *src, uint64_t size) {
   static_assert(is_process_gpu(), "Only valid when running on the GPU");
@@ -402,6 +403,7 @@ LIBC_INLINE void Port<T, S>::send_n(const void *src, uint64_t size) {
   uint64_t *size_ptr = &size;
   send_n(src_ptr, size_ptr);
 }
+#endif
 
 /// Sends an arbitrarily sized data buffer \p src across the shared channel in
 /// multiples of the packet length.
