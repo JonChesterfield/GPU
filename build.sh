@@ -103,7 +103,7 @@ $LLC token_allocate.x64.ll -o token_allocate.x64.s
 
 LIBCINC="-Ilibc -Ilibc/include -Ilibc/utils/gpu/loader "
 
-$CXX $LDFLAGS -I$HSAINC $LIBCINC  libc/utils/gpu/loader/amdgpu/Loader.cpp libc/utils/gpu/loader/Main.cpp libc/utils/gpu/server/Server.cpp -o amdgpu_loader.exe
+$CXX $LDFLAGS -I$HSAINC $LIBCINC  libc/utils/gpu/loader/amdgpu/Loader.cpp libc/utils/gpu/loader/Main.cpp libc/utils/gpu/server/rpc_server.cpp -o amdgpu_loader.exe
 
 # rpc.h is created from a rpc.h.def but ends up defining an enum
 $CXX -Ilibc libc/startup/gpu/amdgpu/start.cpp -c -emit-llvm -o amdgpu_start.bc
