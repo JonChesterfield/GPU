@@ -90,10 +90,12 @@ HSALIB="$HSALIBDIR/libhsa-runtime64.so" # $RDIR/lib/libomptarget.rtl.hsa.so"
 
 LDFLAGS="$HSALIB -Wl,-rpath=$HSALIBDIR -lelf"
 
-CXXVER='-std=c++17'
+CXXVER='-std=c++20'
 OPTLEVEL='-O0 -g -gdwarf-4 '
 
 CXX="$CLANGXX $CXXVER $OPTLEVEL -Wall -Wextra "
+
+AMDGPU="--target=amdgcn-amd-amdhsa -march=$GCNGFX -mcpu=$GCNGFX -Xclang -fconvergent-functions -nogpulib -ffreestanding -nostdinc -isystem $RDIR/include -isystem $RDIR/lib/clang/17/include"
 
 $CXX token_allocate.cpp -o token_allocate.x64.exe && valgrind ./token_allocate.x64.exe
 
@@ -103,7 +105,16 @@ $LLC token_allocate.x64.ll -o token_allocate.x64.s
 
 LIBCINC="-Ilibc -Ilibc/include -Ilibc/utils/gpu/loader "
 
+
 $CXX $LDFLAGS -I$HSAINC $LIBCINC  libc/utils/gpu/loader/amdgpu/Loader.cpp libc/utils/gpu/loader/Main.cpp libc/utils/gpu/server/rpc_server.cpp -o amdgpu_loader.exe
 
 # rpc.h is created from a rpc.h.def but ends up defining an enum
-$CXX -Ilibc libc/startup/gpu/amdgpu/start.cpp -c -emit-llvm -o amdgpu_start.bc
+
+rm -rf build && mkdir -p build
+$CXX $AMDGPU $LIBCINC libc/startup/gpu/amdgpu/start.cpp -c -emit-llvm -o build/amdgpu_start.bc
+
+$CXX $AMDGPU $LIBCINC libc/src/stdlib/exit.cpp -c -emit-llvm -o build/exit.bc
+$CXX $AMDGPU $LIBCINC libc/src/stdlib/atexit.cpp -c -emit-llvm -o build/atexit.bc
+$CXX $AMDGPU $LIBCINC libc/src/__support/OSUtil/quick_exit.cpp -c -emit-llvm -o build/quick_exit.bc
+
+$LINK build/amdgpu_start.bc build/exit.bc build/atexit.bc build/quick_exit.bc -o amdgpu.bc
