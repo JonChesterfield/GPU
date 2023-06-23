@@ -92,7 +92,7 @@ HSALIB="$HSALIBDIR/libhsa-runtime64.so" # $RDIR/lib/libomptarget.rtl.hsa.so"
 LDFLAGS="$HSALIB -Wl,-rpath=$HSALIBDIR -lelf"
 
 CXXVER='-std=c++20'
-OPTLEVEL='-O0 -g -gdwarf-4 '
+OPTLEVEL='-O2 -g -gdwarf-4 '
 
 CXX="$CLANGXX $CXXVER $OPTLEVEL -Wall -Wextra "
 
@@ -131,5 +131,7 @@ $CXX $AMDGPU $LIBCINC main.cpp -c -emit-llvm -o build/main.bc
 $LINK build/main.bc build/amdgpu.bc -o doubt.bc
 
 $CXX $AMDGPU doubt.bc -o main.exe
+
+~/llvm-install/bin/llvm-objdump -d main.exe  &> main.s
 
 ./amdgpu_loader.exe main.exe 

@@ -78,9 +78,24 @@ private:
       return RPC_STATUS_SUCCESS;
     }
 
-    fprintf(stderr, "Server: has work\n");
+    fprintf(stderr, "Server: has work %u\n", port->get_opcode());
+    
 
     switch (port->get_opcode()) {
+    case RPC_TRUNCATED_WRITE_STDERR: {
+      fprintf(stderr, "In trunc write stderr\n");
+        port->recv([&](rpc::Buffer *buffer, uint32_t id) {
+                     fprintf(stderr, "id %u %s %lu %lu %lu %lu\n",
+                             id,
+                             (char*)&buffer->data[0],
+                             buffer->data[0],
+                             buffer->data[1],
+                             buffer->data[2],
+                             buffer->data[3]);
+                   });
+
+        break;
+    }
     case RPC_WRITE_TO_STREAM:
     case RPC_WRITE_TO_STDERR:
     case RPC_WRITE_TO_STDOUT: {

@@ -20,6 +20,8 @@ typedef enum : unsigned short {
   RPC_TEST_INCREMENT = 7,
   RPC_TEST_INTERFACE = 8,
   RPC_TEST_STREAM = 9,
+
+  RPC_TRUNCATED_WRITE_STDERR = 10,
 } rpc_opcode_t;
 
 #endif // __LLVM_LIBC_TYPES_RPC_OPCODE_H__

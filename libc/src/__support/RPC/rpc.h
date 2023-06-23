@@ -518,8 +518,9 @@ Client::try_open() {
 
 template <uint16_t opcode> LIBC_INLINE Client::Port Client::open() {
   for (;;) {
-    if (cpp::optional<Client::Port> p = try_open<opcode>())
+    if (cpp::optional<Client::Port> p = try_open<opcode>()) {
       return cpp::move(p.value());
+    }
     sleep_briefly();
   }
 }
