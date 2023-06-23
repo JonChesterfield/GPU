@@ -37,6 +37,8 @@ static void call_fini_array_callbacks() {
 
 } // namespace __llvm_libc
 
+#define WITH_CTORS 0
+
 extern "C" [[gnu::visibility("protected"), clang::amdgpu_kernel]] void
 _begin(int argc, char **argv, char **env, void *rpc_shared_buffer) {
   // We need to set up the RPC client first in case any of the constructors
@@ -48,8 +50,10 @@ _begin(int argc, char **argv, char **env, void *rpc_shared_buffer) {
   // callbacks are run. So, we register them before running the init
   // array callbacks as they can potentially register their own atexit
   // callbacks.
+#if WITH_CTORS
   __llvm_libc::atexit(&__llvm_libc::call_fini_array_callbacks);
   __llvm_libc::call_init_array_callbacks(argc, argv, env);
+#endif
 }
 
 extern "C" [[gnu::visibility("protected"), clang::amdgpu_kernel]] void
@@ -64,5 +68,7 @@ _end(int retval) {
   // Only a single thread should call `exit` here, the rest should gracefully
   // return from the kernel. This is so only one thread calls the destructors
   // registred with 'atexit' above.
+#if WITH_CTORS
   __llvm_libc::exit(retval);
+#endif
 }

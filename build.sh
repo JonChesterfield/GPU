@@ -96,7 +96,7 @@ OPTLEVEL='-O0 -g -gdwarf-4 '
 
 CXX="$CLANGXX $CXXVER $OPTLEVEL -Wall -Wextra "
 
-AMDGPU="--target=amdgcn-amd-amdhsa -march=$GCNGFX -mcpu=$GCNGFX -Xclang -fconvergent-functions -nogpulib -ffreestanding -fno-builtin -fno-exceptions -fno-rtti -nostdinc -isystem $RDIR/include -isystem $RDIR/lib/clang/17/include"
+AMDGPU="--target=amdgcn-amd-amdhsa -march=$GCNGFX -mcpu=$GCNGFX -Xclang -fconvergent-functions -nogpulib -ffreestanding -fno-builtin -fno-exceptions -fno-rtti -nostdinc -isystem $RDIR/include -isystem $RDIR/lib/clang/17/include -Wl,-mllvm,-amdgpu-lower-global-ctor-dtor=0"
 
 $CXX token_allocate.cpp -o token_allocate.x64.exe && valgrind ./token_allocate.x64.exe
 
@@ -128,4 +128,8 @@ $LINK build/amdgpu_start.bc build/exit.bc build/atexit.bc build/quick_exit.bc bu
 
 $CXX $AMDGPU $LIBCINC main.cpp -c -emit-llvm -o build/main.bc
 
-$CXX $AMDGPU build/main.bc build/amdgpu.bc -o main.exe
+$LINK build/main.bc build/amdgpu.bc -o doubt.bc
+
+$CXX $AMDGPU doubt.bc -o main.exe
+
+./amdgpu_loader.exe main.exe 

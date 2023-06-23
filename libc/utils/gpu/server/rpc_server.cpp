@@ -18,6 +18,8 @@
 #include <variant>
 #include <vector>
 
+extern "C" unsigned int sleep(unsigned int seconds);
+
 using namespace __llvm_libc;
 
 static_assert(sizeof(rpc_buffer_t) == sizeof(rpc::Buffer),
@@ -70,8 +72,13 @@ private:
       std::unordered_map<rpc_opcode_t, rpc_opcode_callback_ty> &callbacks,
       std::unordered_map<rpc_opcode_t, void *> &callback_data) {
     auto port = server.try_open();
-    if (!port)
+    if (!port) {
+      fprintf(stderr, "Server: no work\n");
+      sleep(1);
       return RPC_STATUS_SUCCESS;
+    }
+
+    fprintf(stderr, "Server: has work\n");
 
     switch (port->get_opcode()) {
     case RPC_WRITE_TO_STREAM:

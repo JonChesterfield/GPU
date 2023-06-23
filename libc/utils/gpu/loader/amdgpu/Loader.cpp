@@ -266,6 +266,9 @@ hsa_status_t launch_kernel(hsa_agent_t dev_agent, hsa_executable_t executable,
 
 int load(int argc, char **argv, char **envp, void *image, size_t size,
          const LaunchParameters &params) {
+
+  fprintf(stderr, "Load firing\n");
+
   // Initialize the HSA runtime used to communicate with the device.
   if (hsa_status_t err = hsa_init())
     handle_error(err);
@@ -403,12 +406,15 @@ int load(int argc, char **argv, char **envp, void *image, size_t size,
   LaunchParameters single_threaded_params = {1, 1, 1, 1, 1, 1};
   begin_args_t init_args = {argc, dev_argv, dev_envp,
                             rpc_get_buffer(device_id)};
+
+  fprintf(stderr, "Launch begin.kd\n");
   if (hsa_status_t err = launch_kernel(
           dev_agent, executable, kernargs_pool, coarsegrained_pool, queue,
           single_threaded_params, "_begin.kd", init_args))
     handle_error(err);
 
   start_args_t args = {argc, dev_argv, dev_envp, dev_ret};
+  fprintf(stderr, "Launch start.kd\n");
   if (hsa_status_t err =
           launch_kernel(dev_agent, executable, kernargs_pool,
                         coarsegrained_pool, queue, params, "_start.kd", args))
@@ -440,6 +446,7 @@ int load(int argc, char **argv, char **envp, void *image, size_t size,
   int ret = *static_cast<int *>(host_ret);
 
   end_args_t fini_args = {ret};
+  fprintf(stderr, "Launch end.kd\n");
   if (hsa_status_t err = launch_kernel(
           dev_agent, executable, kernargs_pool, coarsegrained_pool, queue,
           single_threaded_params, "_end.kd", fini_args))
