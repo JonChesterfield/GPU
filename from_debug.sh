@@ -26,6 +26,9 @@ clang++ -std=c++20 $LDFLAGS -I$HSAINC $LIBCINC $SDIR/libc/utils/gpu/loader/amdgp
 
 cd $DIR
 # this doesn't build by default at present
+# note: can't do this unless the build succeeded and stopped running, or ninja
+# tries to do a bunch of different work
+# todo: build start.cpp.o directly
 ninja -C runtimes/runtimes-bins libc.startup.gpu.amdgpu.crt1
 cd -
 
@@ -54,7 +57,7 @@ ARCH=gfx1010
 
 # main is hanging at O0 or O1
 
-$DIR/bin/clang -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib -fno-exceptions -fno-rtti -ffreestanding main.c -emit-llvm -c -o main.bc
+$IDIR/bin/clang -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib -fno-exceptions -fno-rtti -ffreestanding main.c -emit-llvm -c -o main.bc
 
 $DIR/bin/llvm-link main.bc libc.bc -o merged.bc
 
@@ -75,7 +78,20 @@ $DIR/bin/llvm-link main.bc libc.bc -o merged.bc
 #255 0x00000000010620b4 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
 # clang: error: unable to execute command: Segmentation fault
 
-$DIR/bin/clang  --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.bc -o a.out
+$IDIR/bin/clang  --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.bc -o a.out
+
+
+# $IDIR/bin/llc -O1 -mcpu=$ARCH merged.bc -o a.out
+
+
+
+
+# $IDIR/bin/bugpoint merged.bc --safe-run-llc --safe-tool-args -mtriple=amdgcn-amd-amdhsa
+# $IDIR/bin/llvm-dis bugpoint-reduced-simplified.bc 
+
+$IDIR/bin/llc -O1 -mcpu=$ARCH bugpoint-reduced-simplified.ll -o bugpoint.s
+
+exit 0
 
 
 
