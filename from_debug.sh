@@ -92,7 +92,9 @@ $IDIR/bin/clang  --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.bc -o 
 # changed functions to internal, deleted begin/end kernels
 # globaldce helped
 
-$IDIR/bin/llc -O1 -mcpu=$ARCH bugpoint-reduced-simplified.ll -o bugpoint.s
+# $IDIR/bin/llc -O1 -mcpu=$ARCH bugpoint-reduced-simplified.ll -o bugpoint.s
+$IDIR/bin/opt -mtriple=amdgcn-amd-amdhsa -amdgpu-attributor bugpoint-reduced-simplified.ll 
+
 
 exit 0
 
