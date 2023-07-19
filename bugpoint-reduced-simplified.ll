@@ -1,75 +1,24 @@
-; ModuleID = 'bugpoint-reduced-simplified.bc'
+; ModuleID = 'bugpoint-reduced-simplified.ll'
 source_filename = "llvm-link"
 target datalayout = "e-p:64:64-p1:64:64-p2:32:32-p3:32:32-p4:64:64-p5:32:32-p6:32:32-p7:160:256:256:32-p8:128:128-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024-v2048:2048-n32:64-S32-A5-G1-ni:7:8"
 target triple = "amdgcn-amd-amdhsa"
 
 %struct.foo = type { %struct.pluto, ptr, i64 }
 %struct.pluto = type { [512 x i8], ptr }
-%struct.wombat = type { %struct.barney }
-%struct.barney = type { i64, ptr, ptr, ptr, [64 x %struct.widget] }
-%struct.widget = type { i32 }
 
-@global = private unnamed_addr addrspace(4) constant [15 x i8] c"what the hell\0A\00", align 1
-@llvm.global_ctors = appending global [0 x { i32, ptr, ptr }] zeroinitializer
-@global.1 = protected local_unnamed_addr addrspace(1) global ptr addrspacecast (ptr addrspace(1) @global.3 to ptr), align 8
+
+
 @global.2 = internal addrspace(1) global %struct.foo { %struct.pluto zeroinitializer, ptr addrspacecast (ptr addrspace(1) @global.2 to ptr), i64 0 }, align 8
-@global.3 = hidden addrspace(1) global %struct.wombat zeroinitializer, align 8
 
-; Function Attrs: noreturn nounwind
-define hidden i32 @main() local_unnamed_addr #0 {
-bb:
-  unreachable
-}
 
-; Function Attrs: nofree nounwind
-define internal noundef ptr @malloc(i64 noundef %size) #1 {
-  unreachable
-}
 
 ; Function Attrs: nounwind
 define internal noundef i32 @hoge(ptr noundef %arg) #2 {
 bb:
   %load = load i64, ptr addrspace(1) getelementptr inbounds (%struct.foo, ptr addrspace(1) @global.2, i64 0, i32 2), align 8, !tbaa !4
-  %icmp = icmp eq i64 %load, 32
-  br i1 %icmp, label %bb3, label %bb1
 
-bb1:                                              ; preds = %bb
-  %load2 = load ptr, ptr addrspace(1) getelementptr inbounds (%struct.foo, ptr addrspace(1) @global.2, i64 0, i32 1), align 8, !tbaa !11
-  br label %bb9
-
-bb3:                                              ; preds = %bb
-  %call = tail call ptr @malloc(i64 noundef 520) #4
-  %icmp4 = icmp eq ptr %call, null
-  br i1 %icmp4, label %bb12, label %bb5
-
-bb5:                                              ; preds = %bb3
-  br label %bb6
-
-bb6:                                              ; preds = %bb6, %bb5
-  %phi = phi i64 [ 1, %bb5 ], [ %add, %bb6 ]
-  %add = add nuw nsw i64 %phi, 7
-  %icmp7 = icmp eq i64 %add, 512
-  br i1 %icmp7, label %bb8, label %bb6
-
-bb8:                                              ; preds = %bb6
-  br label %bb9
-
-bb9:                                              ; preds = %bb8, %bb1
-  %phi10 = phi i64 [ %load, %bb1 ], [ 0, %bb8 ]
-  %phi11 = phi ptr [ %load2, %bb1 ], [ %call, %bb8 ]
-  %shl = shl i64 %phi10, 4
-  %getelementptr = getelementptr inbounds i8, ptr %phi11, i64 %shl
-  br label %bb12
-
-bb12:                                             ; preds = %bb9, %bb3
-  %phi13 = phi ptr [ %getelementptr, %bb9 ], [ null, %bb3 ]
-  %icmp14 = icmp eq ptr %phi13, null
-  br i1 %icmp14, label %bb16, label %bb15
-
-bb15:                                             ; preds = %bb12
-  br label %bb16
-
-bb16:                                             ; preds = %bb15, %bb12
+  %icmp4 = icmp eq ptr null, null
+  %icmp14 = icmp eq ptr null, null
   %sext = sext i1 %icmp14 to i32
   ret i32 %sext
 }
@@ -77,10 +26,6 @@ bb16:                                             ; preds = %bb15, %bb12
 ; Function Attrs: nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
 declare void @llvm.lifetime.start.p5(i64 immarg, ptr addrspace(5) nocapture) #3
 
-; Function Attrs: nounwind
-define internal noundef i32 @puts(ptr noalias noundef %str) #2 {
-  unreachable
-}
 
 attributes #0 = { noreturn nounwind "no-builtins" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="gfx1010" "target-features"="+16-bit-insts,+ci-insts,+dl-insts,+dpp,+gfx10-insts,+gfx8-insts,+gfx9-insts,+s-memrealtime,+s-memtime-inst,+wavefrontsize32" }
 attributes #1 = { nofree nounwind "no-builtins" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="gfx1010" "target-features"="+16-bit-insts,+ci-insts,+dl-insts,+dpp,+gfx10-insts,+gfx8-insts,+gfx9-insts,+s-memrealtime,+s-memtime-inst,+wavefrontsize32" }
@@ -103,4 +48,3 @@ attributes #4 = { nobuiltin nounwind "no-builtins" }
 !8 = !{!"Simple C++ TBAA"}
 !9 = !{!"any pointer", !7, i64 0}
 !10 = !{!"long", !7, i64 0}
-!11 = !{!5, !9, i64 520}
