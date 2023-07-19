@@ -1047,7 +1047,7 @@ declare void @llvm.experimental.noalias.scope.decl(metadata) #9
 declare i32 @llvm.smax.i32(i32, i32) #7
 
 ; Function Attrs: nounwind
-define hidden void @_ZN11__llvm_libc8internal19call_exit_callbacksEv() local_unnamed_addr #10 {
+define internal void @_ZN11__llvm_libc8internal19call_exit_callbacksEv() local_unnamed_addr #10 {
 entry:
   %0 = load ptr, ptr addrspace(1) getelementptr inbounds (%"class.__llvm_libc::cpp::BlockStore", ptr addrspace(1) @_ZN11__llvm_libc12_GLOBAL__N_114exit_callbacksE, i64 0, i32 1), align 8
   %cmp.i8 = icmp eq ptr %0, addrspacecast (ptr addrspace(1) @_ZN11__llvm_libc12_GLOBAL__N_114exit_callbacksE to ptr)
@@ -1110,14 +1110,14 @@ _ZN11__llvm_libc3cpp10BlockStoreINS_12_GLOBAL__N_110AtExitUnitELm32ELb1EE7destro
 }
 
 ; Function Attrs: mustprogress nobuiltin nounwind
-define void @__llvm_libc_delete(ptr noundef %mem) local_unnamed_addr #11 {
+define internal void @__llvm_libc_delete(ptr noundef %mem) local_unnamed_addr #11 {
 entry:
   tail call void @free(ptr noundef %mem) #23
   ret void
 }
 
 ; Function Attrs: nofree nounwind
-define hidden void @free(ptr noundef %ptr) #2 {
+define internal void @free(ptr noundef %ptr) #2 {
 entry:
   br label %for.cond.i
 
@@ -1264,7 +1264,7 @@ cleanup.cont.i:                                   ; preds = %cleanup.i
 }
 
 ; Function Attrs: nounwind
-define hidden i32 @__cxa_atexit(ptr noundef %callback, ptr noundef %payload, ptr nocapture noundef readnone %0) local_unnamed_addr #10 {
+define internal i32 @__cxa_atexit(ptr noundef %callback, ptr noundef %payload, ptr nocapture noundef readnone %0) local_unnamed_addr #10 {
 entry:
   %1 = load i64, ptr addrspace(1) getelementptr inbounds (%"class.__llvm_libc::cpp::BlockStore", ptr addrspace(1) @_ZN11__llvm_libc12_GLOBAL__N_114exit_callbacksE, i64 0, i32 2), align 8, !tbaa !94
   %cmp.i.i.i = icmp eq i64 %1, 32
@@ -1342,7 +1342,7 @@ _ZN11__llvm_libcL15add_atexit_unitERKNS_12_GLOBAL__N_110AtExitUnitE.exit: ; pred
 }
 
 ; Function Attrs: nofree nounwind
-define hidden noundef ptr @malloc(i64 noundef %size) #2 {
+define internal noundef ptr @malloc(i64 noundef %size) #2 {
 entry:
   br label %for.cond.i
 
@@ -1513,7 +1513,7 @@ while.body.i.i23.i:                               ; preds = %"_ZN11__llvm_libc3r
 declare void @llvm.memset.p0.i64(ptr nocapture writeonly, i8, i64, i1 immarg) #12
 
 ; Function Attrs: nounwind
-define hidden noundef i32 @atexit(ptr noundef %callback) #10 {
+define internal noundef i32 @atexit(ptr noundef %callback) #10 {
 entry:
   %0 = load i64, ptr addrspace(1) getelementptr inbounds (%"class.__llvm_libc::cpp::BlockStore", ptr addrspace(1) @_ZN11__llvm_libc12_GLOBAL__N_114exit_callbacksE, i64 0, i32 2), align 8, !tbaa !94
   %cmp.i.i.i = icmp eq i64 %0, 32
@@ -1598,7 +1598,7 @@ entry:
 }
 
 ; Function Attrs: mustprogress noreturn nounwind
-define hidden void @exit(i32 noundef %status) #14 {
+define internal void @exit(i32 noundef %status) #14 {
 entry:
   tail call void @_ZN11__llvm_libc8internal19call_exit_callbacksEv() #23
   tail call void @_ZN11__llvm_libc10quick_exitEi(i32 noundef %status) #23
@@ -1606,7 +1606,7 @@ entry:
 }
 
 ; Function Attrs: mustprogress noreturn nounwind
-define hidden void @_ZN11__llvm_libc10quick_exitEi(i32 noundef %status) local_unnamed_addr #14 {
+define internal void @_ZN11__llvm_libc10quick_exitEi(i32 noundef %status) local_unnamed_addr #14 {
 entry:
   %status.addr = alloca i32, align 4, addrspace(5)
   %port = alloca %"struct.__llvm_libc::rpc::Port", align 8, addrspace(5)
@@ -1650,7 +1650,7 @@ entry:
 declare void @llvm.lifetime.start.p5(i64 immarg, ptr addrspace(5) nocapture) #15
 
 ; Function Attrs: inlinehint nounwind
-define linkonce_odr hidden %"struct.__llvm_libc::rpc::Port" @_ZN11__llvm_libc3rpc6Client4openILt1EEENS0_4PortILb0ENS0_6PacketILj32EEEEEv(ptr noundef nonnull align 8 dereferenceable(288) %this) local_unnamed_addr #16 comdat align 2 {
+define internal %"struct.__llvm_libc::rpc::Port" @_ZN11__llvm_libc3rpc6Client4openILt1EEENS0_4PortILb0ENS0_6PacketILj32EEEEEv(ptr noundef nonnull align 8 dereferenceable(288) %this) local_unnamed_addr #16 comdat align 2 {
 entry:
   %inbox.i.i = getelementptr inbounds %"struct.__llvm_libc::rpc::Process", ptr %this, i64 0, i32 1
   %outbox.i.i = getelementptr inbounds %"struct.__llvm_libc::rpc::Process", ptr %this, i64 0, i32 2
@@ -1946,7 +1946,7 @@ _ZN11__llvm_libc3rpc7ProcessILb0ENS0_6PacketILj32EEEE18wait_for_ownershipEyjj.ex
 }
 
 ; Function Attrs: inlinehint mustprogress nounwind
-define linkonce_odr hidden void @_ZN11__llvm_libc3rpc4PortILb0ENS0_6PacketILj32EEEE5closeEv(ptr noundef nonnull align 8 dereferenceable(30) %this) local_unnamed_addr #18 comdat align 2 {
+define internal void @_ZN11__llvm_libc3rpc4PortILb0ENS0_6PacketILj32EEEE5closeEv(ptr noundef nonnull align 8 dereferenceable(30) %this) local_unnamed_addr #18 comdat align 2 {
 entry:
   %0 = load ptr, ptr %this, align 8, !tbaa !124
   %lane_mask = getelementptr inbounds %"struct.__llvm_libc::rpc::Port", ptr %this, i64 0, i32 1
@@ -1971,36 +1971,6 @@ entry:
 
 ; Function Attrs: cold nocallback nofree noreturn nounwind
 declare void @llvm.amdgcn.endpgm() #19
-
-; Function Attrs: mustprogress nounwind
-define protected amdgpu_kernel void @_begin(i32 noundef %argc, ptr noundef %argv, ptr noundef %env, ptr noundef %rpc_shared_buffer) local_unnamed_addr #13 {
-entry:
-  store i64 64, ptr addrspace(1) @_ZN11__llvm_libc3rpc6clientE, align 8, !tbaa !128
-  store ptr %rpc_shared_buffer, ptr addrspace(1) getelementptr inbounds (%"struct.__llvm_libc::rpc::Client", ptr addrspace(1) @_ZN11__llvm_libc3rpc6clientE, i64 0, i32 0, i32 1), align 8, !tbaa !16
-  %add.ptr.i.i.i = getelementptr inbounds i8, ptr %rpc_shared_buffer, i64 256
-  store ptr %add.ptr.i.i.i, ptr addrspace(1) getelementptr inbounds (%"struct.__llvm_libc::rpc::Client", ptr addrspace(1) @_ZN11__llvm_libc3rpc6clientE, i64 0, i32 0, i32 2), align 8, !tbaa !17
-  %add.ptr.i14.i.i = getelementptr inbounds i8, ptr %rpc_shared_buffer, i64 512
-  store ptr %add.ptr.i14.i.i, ptr addrspace(1) getelementptr inbounds (%"struct.__llvm_libc::rpc::Client", ptr addrspace(1) @_ZN11__llvm_libc3rpc6clientE, i64 0, i32 0, i32 3), align 8, !tbaa !29
-  %call = tail call noundef i32 @_ZN11__llvm_libc6atexitEPFvvE(ptr noundef nonnull @_ZN11__llvm_libcL25call_fini_array_callbacksEv) #23
-  br i1 icmp ugt (i64 ashr (i64 sub (i64 ptrtoint (ptr addrspacecast (ptr addrspace(1) @__init_array_end to ptr) to i64), i64 ptrtoint (ptr addrspacecast (ptr addrspace(1) @__init_array_start to ptr) to i64)), i64 3), i64 0), label %for.body.preheader.i, label %_ZN11__llvm_libcL25call_init_array_callbacksEiPPcS1_.exit
-
-for.body.preheader.i:                             ; preds = %entry
-  %umax.i = tail call i64 @llvm.umax.i64(i64 ashr (i64 sub (i64 ptrtoint (ptr addrspacecast (ptr addrspace(1) @__init_array_end to ptr) to i64), i64 ptrtoint (ptr addrspacecast (ptr addrspace(1) @__init_array_start to ptr) to i64)), i64 3), i64 1)
-  br label %for.body.i
-
-for.body.i:                                       ; preds = %for.body.i, %for.body.preheader.i
-  %i.03.i = phi i64 [ %inc.i, %for.body.i ], [ 0, %for.body.preheader.i ]
-  %arrayidx.i = getelementptr inbounds [0 x i64], ptr addrspace(1) @__init_array_start, i64 0, i64 %i.03.i
-  %0 = load i64, ptr addrspace(1) %arrayidx.i, align 8, !tbaa !76
-  %1 = inttoptr i64 %0 to ptr
-  tail call void %1(i32 noundef %argc, ptr noundef %argv, ptr noundef %env) #23
-  %inc.i = add nuw i64 %i.03.i, 1
-  %exitcond.not.i = icmp eq i64 %inc.i, %umax.i
-  br i1 %exitcond.not.i, label %_ZN11__llvm_libcL25call_init_array_callbacksEiPPcS1_.exit, label %for.body.i, !llvm.loop !129
-
-_ZN11__llvm_libcL25call_init_array_callbacksEiPPcS1_.exit: ; preds = %for.body.i, %entry
-  ret void
-}
 
 ; Function Attrs: mustprogress nounwind
 define internal void @_ZN11__llvm_libcL25call_fini_array_callbacksEv() #13 {
@@ -2037,64 +2007,58 @@ entry:
   ret void
 }
 
-; Function Attrs: mustprogress noreturn nounwind
-define protected amdgpu_kernel void @_end(i32 noundef %retval) local_unnamed_addr #14 {
-entry:
-  tail call void @_ZN11__llvm_libc4exitEi(i32 noundef %retval) #28
-  unreachable
-}
 
 ; Function Attrs: mustprogress nobuiltin nounwind
-define void @__llvm_libc_delete_aligned(ptr noundef %mem, i64 noundef %0) local_unnamed_addr #11 {
+define internal void @__llvm_libc_delete_aligned(ptr noundef %mem, i64 noundef %0) local_unnamed_addr #11 {
 entry:
   tail call void @free(ptr noundef %mem) #23
   ret void
 }
 
 ; Function Attrs: mustprogress nounwind
-define hidden void @__llvm_libc_delete_sized(ptr noundef %mem, i64 noundef %0) local_unnamed_addr #13 {
+define internal void @__llvm_libc_delete_sized(ptr noundef %mem, i64 noundef %0) local_unnamed_addr #13 {
 entry:
   tail call void @free(ptr noundef %mem) #23
   ret void
 }
 
 ; Function Attrs: mustprogress nounwind
-define hidden void @__llvm_libc_delete_sized_aligned(ptr noundef %mem, i64 noundef %0, i64 noundef %1) local_unnamed_addr #13 {
+define internal void @__llvm_libc_delete_sized_aligned(ptr noundef %mem, i64 noundef %0, i64 noundef %1) local_unnamed_addr #13 {
 entry:
   tail call void @free(ptr noundef %mem) #23
   ret void
 }
 
 ; Function Attrs: mustprogress nobuiltin nounwind
-define void @__llvm_libc_delete_array(ptr noundef %mem) local_unnamed_addr #11 {
+define internal void @__llvm_libc_delete_array(ptr noundef %mem) local_unnamed_addr #11 {
 entry:
   tail call void @free(ptr noundef %mem) #23
   ret void
 }
 
 ; Function Attrs: mustprogress nobuiltin nounwind
-define void @__llvm_libc_delete_array_aligned(ptr noundef %mem, i64 noundef %0) local_unnamed_addr #11 {
+define internal void @__llvm_libc_delete_array_aligned(ptr noundef %mem, i64 noundef %0) local_unnamed_addr #11 {
 entry:
   tail call void @free(ptr noundef %mem) #23
   ret void
 }
 
 ; Function Attrs: mustprogress nounwind
-define hidden void @__llvm_libc_delete_array_sized(ptr noundef %mem, i64 noundef %0) local_unnamed_addr #13 {
+define internal void @__llvm_libc_delete_array_sized(ptr noundef %mem, i64 noundef %0) local_unnamed_addr #13 {
 entry:
   tail call void @free(ptr noundef %mem) #23
   ret void
 }
 
 ; Function Attrs: mustprogress nounwind
-define hidden void @__llvm_libc_delete_array_sized_aligned(ptr noundef %mem, i64 noundef %0, i64 noundef %1) local_unnamed_addr #13 {
+define internal void @__llvm_libc_delete_array_sized_aligned(ptr noundef %mem, i64 noundef %0, i64 noundef %1) local_unnamed_addr #13 {
 entry:
   tail call void @free(ptr noundef %mem) #23
   ret void
 }
 
 ; Function Attrs: nounwind
-define hidden noundef i32 @puts(ptr noalias noundef %str) #10 {
+define internal  noundef i32 @puts(ptr noalias noundef %str) #10 {
 entry:
   br label %for.cond.i.i
 
@@ -2129,7 +2093,7 @@ cleanup:                                          ; preds = %if.end5, %_ZN11__ll
 }
 
 ; Function Attrs: nounwind
-define hidden %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File14write_unlockedEPKvm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #10 align 2 {
+define internal %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File14write_unlockedEPKvm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #10 align 2 {
 entry:
   %mode.i = getelementptr inbounds %"class.__llvm_libc::File", ptr %this, i64 0, i32 12
   %0 = load i32, ptr %mode.i, align 8, !tbaa !132
@@ -2166,7 +2130,7 @@ return:                                           ; preds = %return.sink.split, 
 }
 
 ; Function Attrs: nounwind
-define hidden %"class.__llvm_libc::cpp::expected" @_ZN11__llvm_libc8openfileEPKcS1_(ptr nocapture noundef readonly %path, ptr noundef %mode) local_unnamed_addr #10 {
+define internal %"class.__llvm_libc::cpp::expected" @_ZN11__llvm_libc8openfileEPKcS1_(ptr nocapture noundef readonly %path, ptr noundef %mode) local_unnamed_addr #10 {
 entry:
   %call = tail call noundef i32 @_ZN11__llvm_libc4File10mode_flagsEPKc(ptr noundef %mode) #23
   %cmp = icmp eq i32 %call, 0
@@ -2520,7 +2484,7 @@ cleanup:                                          ; preds = %entry, %"_ZN11__llv
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(read, inaccessiblemem: none)
-define hidden noundef i32 @_ZN11__llvm_libc4File10mode_flagsEPKc(ptr nocapture noundef readonly %mode) local_unnamed_addr #20 align 2 {
+define internal noundef i32 @_ZN11__llvm_libc4File10mode_flagsEPKc(ptr nocapture noundef readonly %mode) local_unnamed_addr #20 align 2 {
 entry:
   %0 = load i8, ptr %mode, align 1, !tbaa !106
   switch i8 %0, label %return [
@@ -2593,7 +2557,7 @@ return:                                           ; preds = %for.body, %for.end,
 }
 
 ; Function Attrs: mustprogress nounwind
-define hidden %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File18write_unlocked_nbfEPKhm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #13 align 2 {
+define internal %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File18write_unlocked_nbfEPKhm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #13 align 2 {
 entry:
   %0 = load ptr, ptr %this, align 8, !tbaa !134
   %call = tail call %"struct.__llvm_libc::FileIOResult" %0(ptr noundef nonnull %this, ptr noundef %data, i64 noundef %len) #23
@@ -2620,13 +2584,13 @@ if.end:                                           ; preds = %if.then, %entry
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none)
-define hidden noundef i32 @_ZN11__llvm_libc4File14flush_unlockedEv(ptr nocapture noundef nonnull readnone align 8 dereferenceable(98) %this) local_unnamed_addr #21 align 2 {
+define internal noundef i32 @_ZN11__llvm_libc4File14flush_unlockedEv(ptr nocapture noundef nonnull readnone align 8 dereferenceable(98) %this) local_unnamed_addr #21 align 2 {
 entry:
   ret i32 0
 }
 
 ; Function Attrs: nounwind
-define hidden %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File18write_unlocked_fbfEPKhm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #10 align 2 {
+define internal %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File18write_unlocked_fbfEPKhm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #10 align 2 {
 entry:
   %pos = getelementptr inbounds %"class.__llvm_libc::File", ptr %this, i64 0, i32 14
   %0 = load i64, ptr %pos, align 8, !tbaa !158
@@ -2762,7 +2726,7 @@ cleanup76:                                        ; preds = %for.cond.cleanup, %
 declare i64 @llvm.usub.sat.i64(i64, i64) #7
 
 ; Function Attrs: nounwind
-define hidden %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File18write_unlocked_lbfEPKhm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #10 align 2 {
+define internal %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File18write_unlocked_lbfEPKhm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #10 align 2 {
 entry:
   br label %for.cond
 
@@ -3051,7 +3015,7 @@ cleanup31:                                        ; preds = %if.then61.i, %if.el
 }
 
 ; Function Attrs: nounwind
-define hidden %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File13read_unlockedEPvm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #10 align 2 {
+define internal %"struct.__llvm_libc::FileIOResult" @_ZN11__llvm_libc4File13read_unlockedEPvm(ptr noundef nonnull align 8 dereferenceable(98) %this, ptr noundef %data, i64 noundef %len) local_unnamed_addr #10 align 2 {
 entry:
   %mode.i = getelementptr inbounds %"class.__llvm_libc::File", ptr %this, i64 0, i32 12
   %0 = load i32, ptr %mode.i, align 8, !tbaa !132
@@ -3219,7 +3183,7 @@ return:                                           ; preds = %for.cond.cleanup, %
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(write, argmem: readwrite, inaccessiblemem: none)
-define hidden noundef i32 @_ZN11__llvm_libc4File15ungetc_unlockedEi(ptr nocapture noundef nonnull align 8 dereferenceable(98) %this, i32 noundef %c) local_unnamed_addr #22 align 2 {
+define internal noundef i32 @_ZN11__llvm_libc4File15ungetc_unlockedEi(ptr nocapture noundef nonnull align 8 dereferenceable(98) %this, i32 noundef %c) local_unnamed_addr #22 align 2 {
 entry:
   %cmp = icmp eq i32 %c, -1
   br i1 %cmp, label %return, label %lor.lhs.false
@@ -3280,7 +3244,7 @@ return:                                           ; preds = %if.end15, %if.else,
 }
 
 ; Function Attrs: nounwind
-define hidden [2 x i32] @_ZN11__llvm_libc4File4seekEli(ptr noundef nonnull align 8 dereferenceable(98) %this, i64 noundef %offset, i32 noundef %whence) local_unnamed_addr #10 align 2 {
+define internal [2 x i32] @_ZN11__llvm_libc4File4seekEli(ptr noundef nonnull align 8 dereferenceable(98) %this, i64 noundef %offset, i32 noundef %whence) local_unnamed_addr #10 align 2 {
 entry:
   %prev_op = getelementptr inbounds %"class.__llvm_libc::File", ptr %this, i64 0, i32 15
   %0 = load i8, ptr %prev_op, align 8, !tbaa !133
@@ -3356,7 +3320,7 @@ cleanup28:                                        ; preds = %if.then7, %if.end16
 }
 
 ; Function Attrs: nounwind
-define hidden %"class.__llvm_libc::cpp::expected.1" @_ZN11__llvm_libc4File4tellEv(ptr noundef nonnull align 8 dereferenceable(98) %this) local_unnamed_addr #10 align 2 {
+define internal %"class.__llvm_libc::cpp::expected.1" @_ZN11__llvm_libc4File4tellEv(ptr noundef nonnull align 8 dereferenceable(98) %this) local_unnamed_addr #10 align 2 {
 entry:
   %eof = getelementptr inbounds %"class.__llvm_libc::File", ptr %this, i64 0, i32 18
   %0 = load i8, ptr %eof, align 8, !tbaa !168, !range !120, !noundef !121
@@ -3421,7 +3385,7 @@ cleanup14:                                        ; preds = %entry, %if.then7, %
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none)
-define hidden noundef i32 @_ZN11__llvm_libc4File10set_bufferEPvmi(ptr nocapture noundef nonnull readnone align 8 dereferenceable(98) %this, ptr nocapture noundef readnone %buffer, i64 noundef %size, i32 noundef %buffer_mode) local_unnamed_addr #21 align 2 {
+define internal noundef i32 @_ZN11__llvm_libc4File10set_bufferEPvmi(ptr nocapture noundef nonnull readnone align 8 dereferenceable(98) %this, ptr nocapture noundef readnone %buffer, i64 noundef %size, i32 noundef %buffer_mode) local_unnamed_addr #21 align 2 {
 entry:
   ret i32 22
 }
