@@ -89,6 +89,9 @@ $IDIR/bin/clang  --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.bc -o 
 # $IDIR/bin/bugpoint merged.bc --safe-run-llc --safe-tool-args -mtriple=amdgcn-amd-amdhsa
 # $IDIR/bin/llvm-dis bugpoint-reduced-simplified.bc 
 
+# changed functions to internal, deleted begin/end kernels
+# globaldce helped
+
 $IDIR/bin/llc -O1 -mcpu=$ARCH bugpoint-reduced-simplified.ll -o bugpoint.s
 
 exit 0
