@@ -11,9 +11,20 @@ cd $DIR
 ninja -C runtimes/runtimes-bins libc.startup.gpu.amdgpu.crt1
 cd -
 
-$DIR/bin/llvm-link $DIR/runtimes/runtimes-bins/libc/src/__support/RPC/CMakeFiles/libc.src.__support.RPC.rpc_client.__internal__.dir/rpc_client.cpp.o $DIR/runtimes/runtimes-bins/libc/src/stdlib/CMakeFiles/libc.src.stdlib.atexit.__internal__.dir/atexit.cpp.o $DIR/runtimes/runtimes-bins/libc/src/stdlib/CMakeFiles/libc.src.stdlib.exit.__internal__.dir/exit.cpp.o $DIR/runtimes/runtimes-bins/libc/src/__support/OSUtil/gpu/CMakeFiles/libc.src.__support.OSUtil.gpu.gpu_util.__internal__.dir/quick_exit.cpp.o $DIR/runtimes/runtimes-bins/libc/startup/gpu/amdgpu/CMakeFiles/libc.startup.gpu.amdgpu.crt1.dir/start.cpp.o -o libc.bc
+BITCODEDIR=$DIR/runtimes/runtimes-bins/libc
 
-$DIR/bin/clang --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib main.c -emit-llvm -c -o main.bc
+$DIR/bin/llvm-link \
+$BITCODEDIR/src/__support/RPC/CMakeFiles/libc.src.__support.RPC.rpc_client.rpc_client.cpp.gfx1010.dir/rpc_client.cpp.o \
+$BITCODEDIR/src/stdlib/CMakeFiles/libc.src.stdlib.atexit.atexit.cpp.gfx1010.dir/atexit.cpp.o \
+$BITCODEDIR/src/stdlib/CMakeFiles/libc.src.stdlib.exit.exit.cpp.gfx1010.dir/exit.cpp.o \
+$BITCODEDIR/src/__support/OSUtil/gpu/CMakeFiles/libc.src.__support.OSUtil.gpu.gpu_util.quick_exit.cpp.gfx1010.dir/quick_exit.cpp.o \
+$BITCODEDIR/startup/gpu/amdgpu/CMakeFiles/libc.startup.gpu.amdgpu.crt1.dir/start.cpp.o \
+$BITCODEDIR/src/__support/CPP/CMakeFiles/libc.src.__support.CPP.new.new.cpp.gfx1010.dir/new.cpp.o \
+$BITCODEDIR/src/stdlib/gpu/CMakeFiles/libc.src.stdlib.gpu.malloc.malloc.cpp.gfx1010.dir/malloc.cpp.o \
+$BITCODEDIR/src/stdlib/gpu/CMakeFiles/libc.src.stdlib.gpu.free.free.cpp.gfx1010.dir/free.cpp.o \
+                   -o libc.bc
+
+$DIR/bin/clang --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib -fno-exceptions -fno-rtti -ffreestanding main.c -emit-llvm -c -o main.bc
 
 $DIR/bin/llvm-link main.bc libc.bc -o merged.bc
 
