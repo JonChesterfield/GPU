@@ -3,6 +3,17 @@ set -x
 set -e
 set -o pipefail
 
+SDIR=$HOME/llvm-project
+
+
+# Build the loader directly, much easier than winning the fight with libc cmake
+HSAINC="$SDIR/dynamic_hsa/include/"
+LIBCINC="-I$SDIR/libc -I$SDIR/libc/include -I$SDIR/libc/utils/gpu/loader "
+LDFLAGS="-ldl"
+clang++ -std=c++20 $LDFLAGS -I$HSAINC $LIBCINC $SDIR/libc/utils/gpu/loader/amdgpu/Loader.cpp $SDIR/libc/utils/gpu/loader/Main.cpp $SDIR/libc/utils/gpu/server/rpc_server.cpp -o amdhsa_loader
+
+
+
 DIR=$HOME/llvm-build/llvm
 ARCH=`$DIR/bin/amdgpu-arch`
 
@@ -10,6 +21,8 @@ cd $DIR
 # this doesn't build by default at present
 ninja -C runtimes/runtimes-bins libc.startup.gpu.amdgpu.crt1
 cd -
+
+
 
 BITCODEDIR=$DIR/runtimes/runtimes-bins/libc
 
@@ -29,6 +42,10 @@ $DIR/bin/clang --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib -fn
 $DIR/bin/llvm-link main.bc libc.bc -o merged.bc
 
 $DIR/bin/clang --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.bc -o a.out
+
+
+
+
 
 $DIR/runtimes/runtimes-bins/libc/utils/gpu/loader/amdgpu/amdhsa_loader a.out 
 
