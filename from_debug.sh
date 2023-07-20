@@ -77,8 +77,8 @@ $IDIR/bin/llvm-dis merged.opt.bc
 PRINT="-print-after-all -filter-print-funcs=main,_start"
 
 $IDIR/bin/opt -passes='metarenamer' merged.opt.bc -o merged.renamed.bc
-$IDIR/bin/llc -O1 -mcpu=$ARCH merged.renamed.bc -filetype=obj -o renamed.O1.o $PRINT &> llc.O1
-$IDIR/bin/llc -O0 -mcpu=$ARCH merged.renamed.bc -filetype=obj -o renamed.O0.o $PRINT &> llc.O0
+# $IDIR/bin/llc -O1 -mcpu=$ARCH merged.renamed.bc -filetype=obj -o renamed.O1.o $PRINT &> llc.O1
+# $IDIR/bin/llc -O0 -mcpu=$ARCH merged.renamed.bc -filetype=obj -o renamed.O0.o $PRINT &> llc.O0
 
 COMMON=`./lua common.lua llc.O0 llc.O1`
 echo $COMMON
