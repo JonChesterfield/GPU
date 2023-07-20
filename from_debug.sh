@@ -60,45 +60,23 @@ ARCH=gfx1010
 
 $IDIR/bin/clang++ -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib -fno-exceptions -fno-rtti -ffreestanding main.cpp -emit-llvm -c -o main.bc
 
-$DIR/bin/llvm-link main.bc libc.bc -o merged.bc
+$IDIR/bin/opt -O2 libc.bc -o libc.opt.bc
 
-## O1 or O2 here blows up in the attributor
-# 2.	Running pass 'AMDGPU Attributor' on module 'merged.bc'.
-  #0 0x000000000311bbf7 llvm::sys::PrintStackTrace(llvm::raw_ostream&, int) (/scratch/jon/llvm-build/llvm/bin/clang-17+0x311bbf7)
-  #1 0x000000000311987e llvm::sys::RunSignalHandlers() (/scratch/jon/llvm-build/llvm/bin/clang-17+0x311987e)
-  #2 0x000000000311c29f SignalHandler(int) Signals.cpp:0:0
-  #3 0x00007f20f79ad140 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x13140)
-  #4 0x0000000001061ea5 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
-  #5 0x00000000010620b4 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
-  #6 0x00000000010620b4 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
-  #7 0x00000000010620b4 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
-  #8 0x00000000010620b4 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
-  #9 0x00000000010620b4 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
- #10 0x00000000010620b4 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
-# ...
-#255 0x00000000010620b4 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
-# clang: error: unable to execute command: Segmentation fault
+$DIR/bin/llvm-link main.bc libc.opt.bc -o merged.bc
 
-
-$IDIR/bin/opt -O2  merged.bc -o merged.opt.bc
+$IDIR/bin/opt -O2 merged.bc -o merged.opt.bc
 $IDIR/bin/llvm-dis merged.opt.bc
 
-$IDIR/bin/clang  -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.opt.bc -o a.out
+# $IDIR/bin/clang   --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.opt.bc -o a.out -###
+
+# hang at O0, works at O1, regardless of whether opt has already run passes on it
+$IDIR/bin/llc -O1 -mcpu=$ARCH merged.opt.bc -filetype=obj -o merged.o
 
 
-# $IDIR/bin/llc -O1 -mcpu=$ARCH merged.bc -o a.out
+# don't run IR passes in the linker, got enough to debug already
+$IDIR/bin/ld.lld merged.o --no-undefined -shared -o a.out
 
 
-
-
-# $IDIR/bin/bugpoint merged.bc --safe-run-llc --safe-tool-args -mtriple=amdgcn-amd-amdhsa
-# $IDIR/bin/llvm-dis bugpoint-reduced-simplified.bc 
-
-# changed functions to internal, deleted begin/end kernels
-# globaldce helped
-
-# $IDIR/bin/llc -O1 -mcpu=$ARCH bugpoint-reduced-simplified.ll -o bugpoint.s
-# $IDIR/bin/opt -mtriple=amdgcn-amd-amdhsa -amdgpu-attributor bugpoint-reduced-simplified.ll 
 
 ./amdhsa_loader a.out 
 
@@ -106,6 +84,19 @@ $IDIR/bin/clang  -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.op
 exit 0
 
 
+# bugpoint stuff
+
+$IDIR/bin/bugpoint merged.bc --safe-run-llc --safe-tool-args -mtriple=amdgcn-amd-amdhsa
+$IDIR/bin/llvm-dis bugpoint-reduced-simplified.bc 
+
+# changed functions to internal, deleted begin/end kernels
+# globaldce helped
+
+$IDIR/bin/llc -O1 -mcpu=$ARCH bugpoint-reduced-simplified.ll -o bugpoint.s
+$IDIR/bin/opt -mtriple=amdgcn-amd-amdhsa -amdgpu-attributor bugpoint-reduced-simplified.ll 
+
+
+# failed attempts to extract bitcode from libc
 LIBCGPU=`find $DIR -iname libcgpu.a`
 
 $DIR/bin/clang-offload-packager $LIBCGPU --archive --image=file=libc.$ARCH.a,arch=$ARCH
