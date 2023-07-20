@@ -48,6 +48,7 @@ $BITCODEDIR/src/stdlib/gpu/CMakeFiles/libc.src.stdlib.gpu.free.free.cpp.gfx1010.
 $BITCODEDIR/src/stdio/CMakeFiles/libc.src.stdio.puts.puts.cpp.gfx1010.dir/puts.cpp.o \
 $BITCODEDIR/src/__support/File/gpu/CMakeFiles/libc.src.__support.File.gpu.gpu_file.file.cpp.gfx1010.dir/file.cpp.o \
 $BITCODEDIR/src/__support/File/CMakeFiles/libc.src.__support.File.file.file.cpp.gfx1010.dir/file.cpp.o \
+$BITCODEDIR/src/__support/OSUtil/gpu/CMakeFiles/libc.src.__support.OSUtil.gpu.gpu_util.io.cpp.gfx1010.dir/io.cpp.o \
  -o libc.bc
 
 $DIR/bin/llvm-nm libc.bc --undefined-only --demangle
@@ -57,7 +58,7 @@ ARCH=gfx1010
 
 # main is hanging at O0 or O1
 
-$IDIR/bin/clang -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib -fno-exceptions -fno-rtti -ffreestanding main.c -emit-llvm -c -o main.bc
+$IDIR/bin/clang++ -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib -fno-exceptions -fno-rtti -ffreestanding main.cpp -emit-llvm -c -o main.bc
 
 $DIR/bin/llvm-link main.bc libc.bc -o merged.bc
 
@@ -78,7 +79,11 @@ $DIR/bin/llvm-link main.bc libc.bc -o merged.bc
 #255 0x00000000010620b4 (anonymous namespace)::AMDGPUInformationCache::getConstantAccess(llvm::Constant const*) AMDGPUAttributor.cpp:0:0
 # clang: error: unable to execute command: Segmentation fault
 
-$IDIR/bin/clang  --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.bc -o a.out
+
+$IDIR/bin/opt -O2  merged.bc -o merged.opt.bc
+$IDIR/bin/llvm-dis merged.opt.bc
+
+$IDIR/bin/clang  -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.opt.bc -o a.out
 
 
 # $IDIR/bin/llc -O1 -mcpu=$ARCH merged.bc -o a.out
@@ -93,16 +98,9 @@ $IDIR/bin/clang  --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.bc -o 
 # globaldce helped
 
 # $IDIR/bin/llc -O1 -mcpu=$ARCH bugpoint-reduced-simplified.ll -o bugpoint.s
-$IDIR/bin/opt -mtriple=amdgcn-amd-amdhsa -amdgpu-attributor bugpoint-reduced-simplified.ll 
-
-
-exit 0
-
-
+# $IDIR/bin/opt -mtriple=amdgcn-amd-amdhsa -amdgpu-attributor bugpoint-reduced-simplified.ll 
 
 ./amdhsa_loader a.out 
-
-
 
            
 exit 0
