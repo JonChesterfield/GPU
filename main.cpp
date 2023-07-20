@@ -1,5 +1,4 @@
-
-
+#include "write_to_stderr.hpp"
 
 extern "C" int puts(const char*);
 
@@ -9,11 +8,10 @@ int flatputs(const char* x)
   return puts(x);
 }
 
-extern "C" void write_to_stderr(const char *msg);
 
 __attribute__((always_inline))
 __attribute__((visibility("default")))
-extern "C" int cmain(int argc, char **argv, char **envp) {
+extern "C" int main(int argc, char **argv, char **envp) {
 
   write_to_stderr("what the hell\n");
 

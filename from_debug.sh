@@ -24,6 +24,8 @@ LIBCINC="-I$SDIR/libc -I$SDIR/libc/include -I$SDIR/libc/utils/gpu/loader "
 clang++ -std=c++20 $LDFLAGS -I$HSAINC $LIBCINC $SDIR/libc/utils/gpu/loader/amdgpu/Loader.cpp $SDIR/libc/utils/gpu/loader/Main.cpp $SDIR/libc/utils/gpu/server/rpc_server.cpp -Wl,--rpath=$DIR/lib -o amdhsa_loader
 
 
+
+
 cd $DIR
 # this doesn't build by default at present
 # note: can't do this unless the build succeeded and stopped running, or ninja
@@ -58,9 +60,12 @@ ARCH=gfx1010
 
 # main is hanging at O0 or O1
 
-$IDIR/bin/clang++ -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib -fno-exceptions -fno-rtti -ffreestanding main.cpp -emit-llvm -c -o main.bc
+$IDIR/bin/clang++ $LIBCINC -O2 --target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -nogpulib -fno-exceptions -fno-rtti -ffreestanding main.cpp -emit-llvm -c -o main.bc
 
-$IDIR/bin/opt -O2 libc.bc -o libc.opt.bc
+
+SYMBOLS='_start,_begin,_end,puts,write_to_stderr,main,_ZN11__llvm_libc15write_to_stderrENS_3cpp11string_viewE'
+
+$IDIR/bin/opt -passes='default<O2>,internalize,globaldce,adce,instcombine' --internalize-public-api-list=$SYMBOLS libc.bc -o libc.opt.bc
 
 $DIR/bin/llvm-link main.bc libc.opt.bc -o merged.bc
 
@@ -69,13 +74,29 @@ $IDIR/bin/llvm-dis merged.opt.bc
 
 # $IDIR/bin/clang   --target=amdgcn-amd-amdhsa -march=$ARCH -nogpulib merged.opt.bc -o a.out -###
 
+PRINT="-print-after-all -filter-print-funcs=main,_start"
+
+$IDIR/bin/opt -passes='metarenamer' merged.opt.bc -o merged.renamed.bc
+$IDIR/bin/llc -O1 -mcpu=$ARCH merged.renamed.bc -filetype=obj -o renamed.O1.o $PRINT &> llc.O1
+$IDIR/bin/llc -O0 -mcpu=$ARCH merged.renamed.bc -filetype=obj -o renamed.O0.o $PRINT &> llc.O0
+
+COMMON=`./lua common.lua llc.O0 llc.O1`
+echo $COMMON
+
+tail -n +$COMMON llc.O0 > llc.trunc.O0
+tail -n +$COMMON llc.O1 > llc.trunc.O1
+
+$IDIR/bin/llc -O1 -mcpu=$ARCH merged.renamed.bc -o renamed.O1.s
+$IDIR/bin/llc -O0 -mcpu=$ARCH merged.renamed.bc -o renamed.O0.s
+
+
 # hang at O0, works at O1, regardless of whether opt has already run passes on it
+# shotgun killing passes to see if I can stumble on a single one that breaks things
 $IDIR/bin/llc -O1 -mcpu=$ARCH merged.opt.bc -filetype=obj -o merged.o
 
 
 # don't run IR passes in the linker, got enough to debug already
 $IDIR/bin/ld.lld merged.o --no-undefined -shared -o a.out
-
 
 
 ./amdhsa_loader a.out 
