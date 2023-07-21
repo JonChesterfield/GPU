@@ -13,10 +13,20 @@ void write_to_stderr(const char *msg) {
 }
 
 void write_to_stderr(uint32_t val) {
-  char line_str[__llvm_libc::IntegerToString::dec_bufsize<uint32_t>()] = {0};
-  __llvm_libc::IntegerToString::dec(val, line_str);
+
+  char line_str[__llvm_libc::IntegerToString::dec_bufsize<uint32_t>()];
+  for (int i = 0; i < sizeof(line_str); i++) {
+    //             line_str[i] = '0';
+  }
+
+  __llvm_libc::cpp::string_view view =
+      __llvm_libc::IntegerToString::dec(val, line_str);
   __llvm_libc::write_to_stderr("<");
+#if 1
+  __llvm_libc::write_to_stderr(view);
+#else
   __llvm_libc::write_to_stderr(line_str);
+#endif
   __llvm_libc::write_to_stderr(">");
 }
 

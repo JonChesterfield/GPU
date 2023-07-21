@@ -21,7 +21,7 @@ HSALIB="$HSALIBDIR/libhsa-runtime64.so"
 LDFLAGS="$HSALIB -Wl,-rpath=$HSALIBDIR -lelf"
 
 LIBCINC="-I$SDIR/libc -I$SDIR/libc/include -I$SDIR/libc/utils/gpu/loader "
-clang++ -std=c++20 $LDFLAGS -I$HSAINC $LIBCINC $SDIR/libc/utils/gpu/loader/amdgpu/Loader.cpp $SDIR/libc/utils/gpu/loader/Main.cpp $SDIR/libc/utils/gpu/server/rpc_server.cpp -Wl,--rpath=$DIR/lib -o amdhsa_loader
+clang++ -std=c++20 -O2 $LDFLAGS -I$HSAINC $LIBCINC $SDIR/libc/utils/gpu/loader/amdgpu/Loader.cpp $SDIR/libc/utils/gpu/loader/Main.cpp $SDIR/libc/utils/gpu/server/rpc_server.cpp -Wl,--rpath=$DIR/lib -o amdhsa_loader
 
 
 
