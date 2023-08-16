@@ -14,13 +14,9 @@ void write_to_stderr(const char *msg) {
 
 void write_to_stderr(uint32_t val) {
 
-  char line_str[__llvm_libc::IntegerToString::dec_bufsize<uint32_t>()];
-  for (int i = 0; i < sizeof(line_str); i++) {
-    //             line_str[i] = '0';
-  }
-
-  __llvm_libc::cpp::string_view view =
-      __llvm_libc::IntegerToString::dec(val, line_str);
+  const __llvm_libc::IntegerToString<uint32_t> line_buffer(val);
+  
+  __llvm_libc::cpp::string_view view = line_buffer.view();
   __llvm_libc::write_to_stderr("<");
 #if 1
   __llvm_libc::write_to_stderr(view);

@@ -47,11 +47,12 @@ $BITCODEDIR/startup/gpu/amdgpu/CMakeFiles/libc.startup.gpu.amdgpu.crt1.dir/start
 $BITCODEDIR/src/__support/CPP/CMakeFiles/libc.src.__support.CPP.new.new.cpp.gfx1010.dir/new.cpp.o \
 $BITCODEDIR/src/stdlib/gpu/CMakeFiles/libc.src.stdlib.gpu.malloc.malloc.cpp.gfx1010.dir/malloc.cpp.o \
 $BITCODEDIR/src/stdlib/gpu/CMakeFiles/libc.src.stdlib.gpu.free.free.cpp.gfx1010.dir/free.cpp.o \
-$BITCODEDIR/src/stdio/CMakeFiles/libc.src.stdio.puts.puts.cpp.gfx1010.dir/puts.cpp.o \
-$BITCODEDIR/src/__support/File/gpu/CMakeFiles/libc.src.__support.File.gpu.gpu_file.file.cpp.gfx1010.dir/file.cpp.o \
-$BITCODEDIR/src/__support/File/CMakeFiles/libc.src.__support.File.file.file.cpp.gfx1010.dir/file.cpp.o \
 $BITCODEDIR/src/__support/OSUtil/gpu/CMakeFiles/libc.src.__support.OSUtil.gpu.gpu_util.io.cpp.gfx1010.dir/io.cpp.o \
  -o libc.bc
+
+# $BITCODEDIR/src/__support/File/CMakeFiles/libc.src.__support.File.file.file.cpp.gfx1010.dir/file.cpp.o \
+# $BITCODEDIR/src/__support/File/gpu/CMakeFiles/libc.src.__support.File.gpu.gpu_file.file.cpp.gfx1010.dir/file.cpp.o \
+# $BITCODEDIR/src/stdio/CMakeFiles/libc.src.stdio.puts.puts.cpp.gfx1010.dir/puts.cpp.o \
 
 $DIR/bin/llvm-nm libc.bc --undefined-only --demangle
 
