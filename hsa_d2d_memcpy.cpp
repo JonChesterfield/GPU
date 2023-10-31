@@ -80,7 +80,7 @@ template <typename T, hsa_region_info_t req> struct region_get_info {
     T res;
     hsa_status_t r =
         hsa_region_get_info(region, req, static_cast<void *>(&res));
-    (void)r;
+    guard(r);
     return res;
   }
 };
@@ -93,16 +93,8 @@ template <typename T, hsa_region_info_t req> struct region_get_info {
 REGION_GEN_INFO(segment, hsa_region_segment_t, HSA_REGION_INFO_SEGMENT);
 REGION_GEN_INFO(global_flags, hsa_region_global_flag_t,
                 HSA_REGION_INFO_GLOBAL_FLAGS);
-REGION_GEN_INFO(size, size_t, HSA_REGION_INFO_SIZE);
-REGION_GEN_INFO(alloc_max_size, size_t, HSA_REGION_INFO_ALLOC_MAX_SIZE);
-REGION_GEN_INFO(alloc_max_private_workgroup_size, uint32_t,
-                HSA_REGION_INFO_ALLOC_MAX_PRIVATE_WORKGROUP_SIZE);
 REGION_GEN_INFO(runtime_alloc_allowed, bool,
                 HSA_REGION_INFO_RUNTIME_ALLOC_ALLOWED);
-REGION_GEN_INFO(runtime_alloc_granule, size_t,
-                HSA_REGION_INFO_RUNTIME_ALLOC_GRANULE);
-REGION_GEN_INFO(runtime_alloc_alignment, size_t,
-                HSA_REGION_INFO_RUNTIME_ALLOC_ALIGNMENT);
 
 namespace detail {
 template <hsa_region_global_flag_t Flag>
@@ -168,11 +160,6 @@ hsa_amd_memory_pool_t find_coarse_grain_global(hsa_agent_t agent) {
   } else {
     exit(1);
   }
-}
-
-inline hsa_region_t region_coarse_grained(hsa_agent_t agent) {
-  return detail::global_region_with_flag<HSA_REGION_GLOBAL_FLAG_COARSE_GRAINED>(
-      agent);
 }
 
 static hsa_status_t invoke_hsa_copy(void *dst, hsa_agent_t dst_agent,
