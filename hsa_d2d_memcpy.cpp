@@ -1,3 +1,12 @@
+#if 0
+// Reproducer in progress for openmp bug on rocm 5.7
+// libomptarget/test/offloading/d2d_memcpy is passing
+// on a 2xgfx9 system and failing on a 2xgfx10 system
+// This test was expected to do likewise but actually
+// fails on both machines, so it's doing something
+// unintentionally different to the openmp runtime
+#endif
+
 #include "hsa/hsa.h"
 #include "hsa/hsa_ext_amd.h"
 
