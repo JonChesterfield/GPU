@@ -98,6 +98,9 @@ CXX="$CLANGXX $CXXVER $OPTLEVEL -Wall -Wextra "
 
 AMDGPU="--target=amdgcn-amd-amdhsa -march=$GCNGFX -mcpu=$GCNGFX -Xclang -fconvergent-functions -nogpulib -ffreestanding -fno-builtin -fno-exceptions -fno-rtti -nostdinc -isystem $RDIR/include -isystem $RDIR/lib/clang/17/include -Wl,-mllvm,-amdgpu-lower-global-ctor-dtor=0"
 
+$CXX $LDFLAGS -I$HSAINC hsa_d2d_memcpy.cpp -o d2d && ./d2d
+exit 0
+
 $CXX token_allocate.cpp -o token_allocate.x64.exe && valgrind ./token_allocate.x64.exe
 
 $CXX -g0 -O3 -DNDEBUG token_codegen.cpp -S -emit-llvm -o token_allocate.x64.ll
