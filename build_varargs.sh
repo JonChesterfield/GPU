@@ -33,7 +33,10 @@ fi
 
 # This shouldn't work - there are no unresolved symbols in the first file to justify linking files from the archive
 # nevertheless it does, should raise a bug for that. Expected to need to say that _start was a required symbol
-$IDIR/bin/clang++ $AMDGPU varargs.cpp libc.$ARCH.a -o varargs.gcn.out
+$IDIR/bin/clang++ $AMDGPU varargs.cpp -O1 -emit-llvm -S -o varargs.gcn.ll
+$IDIR/bin/opt -expand-va-intrinsics -expand-va-intrinsics-all=true  varargs.gcn.ll  -S -o varargs.opt.gcn.ll
+$IDIR/bin/clang++ $AMDGPU varargs.gcn.ll -S -o varargs.gcn.s
+$IDIR/bin/clang++ $AMDGPU varargs.gcn.ll libc.$ARCH.a -o varargs.gcn.out
 
 # $IDIR/bin/llvm-nm --extern-only varargs.gcn.out
 

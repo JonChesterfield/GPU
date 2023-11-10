@@ -8,11 +8,12 @@ typedef __builtin_va_list va_list;
 
 // newer compilers don't need the wip thing
 
+
 template <typename A>
 A middle(void* wip, ...)
 {
   va_list va;
-  __builtin_va_start(va, wip);
+ __builtin_va_start(va, wip);
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -38,7 +39,7 @@ extern "C" int main()
 {
   int c = 0;
   
-  if (1)
+  if (0)
   {
     c++;
     int x = 42;
@@ -46,7 +47,7 @@ extern "C" int main()
     if (!p) return c;
   }
 
-  if (1)
+  if (0)
   {
     c++;
     unsigned long x = ~(4004ul);
