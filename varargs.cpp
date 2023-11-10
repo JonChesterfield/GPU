@@ -33,7 +33,8 @@ bool check(R x)
   return x == y;
 }
 
-int main()
+
+extern "C" int main()
 {
   int c = 0;
   
