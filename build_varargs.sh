@@ -37,7 +37,10 @@ fi
 EXPANDNONE="-expand-va-intrinsics-disable=true"
 EXPANDALL="-expand-va-intrinsics-split=true -expand-va-intrinsics-calls=true -expand-va-intrinsics-operations=true -expand-va-intrinsics-abi=true"
 
-$IDIR/bin/clang++ $X64 -g -gdwarf-4 -mllvm $EXPANDNONE varargs.cpp -O1 -emit-llvm -S -o varargs.x64.ll -Wno-varargs
+DEBUG="-g -gdwarf-4"
+DEBUG=""
+
+$IDIR/bin/clang++ $X64 $DEBUG -mllvm $EXPANDNONE varargs.cpp -O1 -emit-llvm -S -o varargs.x64.ll -Wno-varargs
 $IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs.x64.ll  -S -o varargs.lowered.x64.ll
 $IDIR/bin/opt $EXPANDNONE -O3  varargs.lowered.x64.ll  -S -o varargs.opt.x64.ll
 $IDIR/bin/clang++ $X64 varargs.opt.x64.ll -S -o varargs.x64.s
@@ -56,7 +59,7 @@ $IDIR/bin/clang++ $AMDGPU -mllvm $EXPANDNONE varargs.cpp -O1 -emit-llvm -S -o va
 $IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs.gcn.ll  -S -o varargs.lowered.gcn.ll
 $IDIR/bin/opt $EXPANDNONE -O3  varargs.lowered.gcn.ll  -S -o varargs.opt.gcn.ll
 $IDIR/bin/clang++ $AMDGPU varargs.opt.gcn.ll -S -o varargs.gcn.s
-$IDIR/bin/clang++ $AMDGPU varargs.opt.gcn.ll -o varargs.gcn.out
+$IDIR/bin/clang++ $AMDGPU varargs.opt.gcn.ll $LIBCNAME -o varargs.gcn.out
 
 # $IDIR/bin/llvm-nm --extern-only varargs.gcn.out
 

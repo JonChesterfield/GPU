@@ -3,7 +3,7 @@ typedef __builtin_va_list va_list;
 #define va_start(ap, ...) __builtin_va_start(ap, 0)
 #define va_end(ap) __builtin_va_end(ap)
 #define va_arg(ap, type) __builtin_va_arg(ap, type)
-#define NOINLINE __attribute__((noinline))
+#define NOINLINE // __attribute__((noinline))
 
 template <typename A>
 NOINLINE A f__v__middle(...)
