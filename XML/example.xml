@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!-- <?xml-stylesheet type="text/xsl" href="example.xsl"?> -->
+<Document xml:space="default" >
+  <Title>My Article</Title>
+
+  <Function>
+    <Name> Demo </Name>
+    <Return>
+      <Type>void</Type>
+    </Return>
+      
+    <Parameters>
+      <Param>
+        <Type>
+          int
+        </Type>
+        <Name>
+          x0
+        </Name>
+      </Param>
+      <Param>
+        <Type>float</Type>
+        <Name>x1</Name>
+      </Param>
+      
+    </Parameters>
+
+    <Implementation><![CDATA[
+{
+a & b things
+}
+]]>
+    </Implementation>
+  </Function>
+</Document>
