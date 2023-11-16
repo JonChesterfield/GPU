@@ -3,11 +3,24 @@
 local inspect = require("inspect")
 
 local template = [[
+
+STRUCT_TYPE
+
 template <typename A>
 NOINLINE A CASE_middle(FIXEDPARAMETER$...)
 {
   va_list va;
-  __builtin_va_start(va, 0);
+  __builtin_va_start(va, 0);VA_ARG_PREFIX
+  A x = va_arg(va, A);
+  va_end(va);
+  return x;
+}
+
+template <typename A>
+NOINLINE A CASE_ref_middle(FIXEDPARAMETER$va_list buffer)
+{
+  va_list va;
+  __builtin_va_copy(va, buffer);VA_ARG_PREFIX
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -20,6 +33,17 @@ NOINLINE A CASE_outer(A x)
   return tmp;
 }
 
+template <typename A>
+NOINLINE A CASE_ref_outer(A x)
+{
+BUFFER_VALIST
+  va_list ptr;
+  init_valist((void*)&buffer, &ptr);
+  A tmp = CASE_ref_middle<A>(FIXEDARGUMENT$ptr);
+  return tmp;
+}
+
+
 NOINLINE bool CASE_check(void)
 {
   using T = TARGET_TYPE;
@@ -27,6 +51,15 @@ NOINLINE bool CASE_check(void)
   T y = CASE_outer<T>(x);
   return x == y;
 }
+
+NOINLINE bool CASE_ref_check(void)
+{
+  using T = TARGET_TYPE;
+  T x = TARGET_INIT;
+  T y = CASE_ref_outer<T>(x);
+  return x == y;
+}
+
 
 ]]
 
@@ -57,9 +90,68 @@ type_to_zero = {
    ["float"] = "0.0f",
    ["double"] = "0.0",
 }
-
+type_to_size = {
+   ["int"] = "4",
+   ["float"] = "4",
+   ["double"] = "8",
+}
 
 local accumulate = {}
+
+function struct_of_types_aligned(types, slot_align)
+   local offset = 0
+   local type_def = string.format([[
+#if SLOT_ALIGN == %s
+struct __attribute__((packed)) CASE_buffer 
+{]], slot_align)
+   local j = 0
+   
+  for i, ty in ipairs(types) do
+      assert(ty ~= nil)
+      local sz = type_to_size[ty]
+      assert(sz ~= nil)
+
+      if (offset % slot_align) ~= 0 then
+         local rem = offset % slot_align
+         local pad = slot_align - rem
+
+         type_def = string.format("%s\n  char pad%s[%s];", type_def, j, pad)
+         j = j  +1
+         offset = offset + pad
+      end
+
+      local name = string.format("x%s", i-1)
+      if i == #types then
+         name = "val"
+      end
+      type_def = string.format("%s\n  %s %s;", type_def, ty, name)
+      offset = offset + sz
+   end
+
+  type_def = type_def .. [[
+
+};
+#endif
+]]
+
+   return type_def
+end
+
+function struct_of_types(types)
+   if #types == 1 then
+      return string.format([[
+struct __attribute__((packed)) CASE_buffer 
+{
+  %s val;
+};
+]], types[1])      
+   end
+
+   
+   return struct_of_types_aligned(types, 8) .. struct_of_types_aligned(types, 4)
+   
+end
+
 
 function instantiate(fixed_types,
                      vararg_types,
@@ -95,8 +187,39 @@ function instantiate(fixed_types,
       local z = type_to_zero[ty]
       if z == nil then z = string.format("{/*%s*/}", ty) end
       vararg_prefix_init = string.format("%s%s, ", vararg_prefix_init, z)
-
    end
+
+   local valist_arg_prefix = ''
+   for i, f in ipairs(vararg_types) do
+      local ty = abbrev_to_type[f]
+      assert(ty ~= nil)
+      valist_arg_prefix = string.format("%s\n  va_arg(va, %s);", valist_arg_prefix, ty)
+   end
+
+   local type_def = ''
+   do
+      local tmp = {}
+      for i, f in ipairs(vararg_types) do
+         tmp[i] = abbrev_to_type[f]
+      end
+      tmp[#tmp+1] = abbrev_to_type[target_pair[1]]
+      type_def = struct_of_types(tmp)
+   end
+   type_def = type_def:gsub("CASE", case_name)   
+
+   local type_inst = [[
+  CASE_buffer buffer = {]]
+
+   for i, f in ipairs(vararg_types) do
+      local ty = abbrev_to_type[f]
+      assert(ty ~= nil)
+      type_inst = string.format("%s\n    .x%s = %s,", type_inst, i-1, type_to_zero[ty])
+   end
+   type_inst = string.format("%s\n    .val = %s,", type_inst, "x")
+
+
+   type_inst = type_inst:gsub("CASE", case_name)
+   type_inst = type_inst .. '\n  };'
    
    local t = template
    t = t:gsub("FIXEDPARAMETER", fixed_param)
@@ -108,11 +231,16 @@ function instantiate(fixed_types,
    
    t = t:gsub("%$","")
 
-   t = t:gsub("CASE", case_name)
+   t = t:gsub("STRUCT_TYPE", type_def)
+   t = t:gsub("BUFFER_VALIST", type_inst)
 
-   accumulate[#accumulate+1] = case_name .. "_check"
+   t = t:gsub("VA_ARG_PREFIX", valist_arg_prefix)
    
-   return t
+   t = t:gsub("CASE", case_name)
+   accumulate[#accumulate+1] = case_name .. "_ref_check"
+   accumulate[#accumulate+1] = case_name .. "_check"
+
+return t
 end
 
 
@@ -124,6 +252,57 @@ typedef __builtin_va_list va_list;
 #define va_end(ap) __builtin_va_end(ap)
 #define va_arg(ap, type) __builtin_va_arg(ap, type)
 #define NOINLINE // __attribute__((noinline))
+
+
+__attribute__((used))
+static void init_valist(void* buf, va_list*);
+
+#if 0
+struct x64_ref_inner
+{
+  unsigned gp_offset;
+  unsigned fp_offset;
+  void* overflow_arg_area;
+  void* ref_save_area;
+};
+
+struct x64_ref
+{
+  x64_ref_inner val[1];
+};
+
+void ref_init_valist(void* buf, va_list* p)
+{
+  x64_ref* r = (x64_ref*)p;
+  r->val[0].gp_offset = 48;
+  r->val[0].fp_offset = 176;
+  r->val[0].overflow_arg_area = buf;
+  r->val[0].ref_save_area = nullptr;
+}
+#endif
+
+#ifdef __x86_64
+#define SLOT_ALIGN 8
+static void init_valist(void* BUFFER, va_list * out)
+{
+  (*out)[0].gp_offset = 48;
+  (*out)[0].fp_offset = 6 * 8 + 8 * 16;
+  (*out)[0].overflow_arg_area = BUFFER;
+  (*out)[0].reg_save_area = 0;
+}
+#endif
+
+#ifdef __AMDGPU__
+#define SLOT_ALIGN 4
+static void init_valist(void* BUFFER, va_list *out)
+{
+  va_list VAPTR;
+  __builtin_memcpy((char*)&VAPTR, &BUFFER, 8);
+  __builtin_memcpy(out, &VAPTR, sizeof(va_list));
+}
+#endif
+
+
 
 ]]
 end
@@ -172,8 +351,8 @@ function body()
    
    r = r ..
       instantiate(
-         {"i", "f", "d", },
-         {"f", "f"},
+         {"i", "d", "d", },
+         {"i", "d", "i", "d"},
          {"i", "42"})
    
    return r
