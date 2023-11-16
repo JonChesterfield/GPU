@@ -7,7 +7,7 @@ local template = [[
 STRUCT_TYPE
 
 template <typename A>
-NOINLINE A CASE_middle(FIXEDPARAMETER$...)
+NOINLINE FORCEINLINE A CASE_middle(FIXEDPARAMETER$...)
 {
   va_list va;
   __builtin_va_start(va, 0);VA_ARG_PREFIX
@@ -17,7 +17,7 @@ NOINLINE A CASE_middle(FIXEDPARAMETER$...)
 }
 
 template <typename A>
-NOINLINE A CASE_ref_middle(FIXEDPARAMETER$va_list buffer)
+NOINLINE FORCEINLINE A CASE_ref_middle(FIXEDPARAMETER$va_list buffer)
 {
   va_list va;
   __builtin_va_copy(va, buffer);VA_ARG_PREFIX
@@ -27,14 +27,14 @@ NOINLINE A CASE_ref_middle(FIXEDPARAMETER$va_list buffer)
 }
 
 template <typename A>
-NOINLINE A CASE_outer(A x)
+NOINLINE FORCEINLINE A CASE_outer(A x)
 {
   A tmp = CASE_middle<A>(FIXEDARGUMENT$VARARGPARAMETER$x);
   return tmp;
 }
 
 template <typename A>
-NOINLINE A CASE_ref_outer(A x)
+NOINLINE FORCEINLINE A CASE_ref_outer(A x)
 {
 BUFFER_VALIST
   va_list ptr;
@@ -44,7 +44,7 @@ BUFFER_VALIST
 }
 
 
-NOINLINE bool CASE_check(void)
+NOINLINE FORCEINLINE bool CASE_check(void)
 {
   using T = TARGET_TYPE;
   T x = TARGET_INIT;
@@ -52,7 +52,7 @@ NOINLINE bool CASE_check(void)
   return x == y;
 }
 
-NOINLINE bool CASE_ref_check(void)
+NOINLINE FORCEINLINE bool CASE_ref_check(void)
 {
   using T = TARGET_TYPE;
   T x = TARGET_INIT;
@@ -84,16 +84,19 @@ abbrev_to_type = {
    ["i"] = "int",
    ["f"] = "float",
    ["d"] = "double",
+   ["s_id"] = "tup<int,double>",
 }
 type_to_zero = {
    ["int"] = "0",
    ["float"] = "0.0f",
    ["double"] = "0.0",
+   ["s_id"] = "{0, 0.0}",
 }
 type_to_size = {
    ["int"] = "4",
    ["float"] = "4",
    ["double"] = "8",
+   ["tup<int,double>"] = "16",
 }
 
 local accumulate = {}
@@ -107,26 +110,25 @@ struct __attribute__((packed)) CASE_buffer
    local j = 0
    
   for i, ty in ipairs(types) do
-      assert(ty ~= nil)
-      local sz = type_to_size[ty]
-      assert(sz ~= nil)
+     assert(ty ~= nil)
+     local sz = type_to_size[ty]
+     assert(sz ~= nil)
 
-      if (offset % slot_align) ~= 0 then
-         local rem = offset % slot_align
-         local pad = slot_align - rem
+     if (offset % slot_align) ~= 0 then
+        local rem = offset % slot_align
+        local pad = slot_align - rem
+        type_def = string.format("%s\n  char pad%s[%s];", type_def, j, pad)
+        j = j + 1
+        offset = offset + pad
+     end
 
-         type_def = string.format("%s\n  char pad%s[%s];", type_def, j, pad)
-         j = j  +1
-         offset = offset + pad
-      end
-
-      local name = string.format("x%s", i-1)
-      if i == #types then
-         name = "val"
-      end
-      type_def = string.format("%s\n  %s %s;", type_def, ty, name)
-      offset = offset + sz
-   end
+     local name = string.format("x%s", i-1)
+     if i == #types then
+        name = "val"
+     end
+     type_def = string.format("%s\n  %s %s;", type_def, ty, name)
+     offset = offset + sz
+  end
 
   type_def = type_def .. [[
 
@@ -185,7 +187,7 @@ function instantiate(fixed_types,
 
       case_name = case_name .. f
       local z = type_to_zero[ty]
-      if z == nil then z = string.format("{/*%s*/}", ty) end
+      if z == nil then z = string.format("%s{}", ty) end
       vararg_prefix_init = string.format("%s%s, ", vararg_prefix_init, z)
    end
 
@@ -193,7 +195,12 @@ function instantiate(fixed_types,
    for i, f in ipairs(vararg_types) do
       local ty = abbrev_to_type[f]
       assert(ty ~= nil)
-      valist_arg_prefix = string.format("%s\n  va_arg(va, %s);", valist_arg_prefix, ty)
+      valist_arg_prefix = string.format([[%s
+  {
+    using T = %s;
+    va_arg(va, T);
+  }
+]], valist_arg_prefix, ty)
    end
 
    local type_def = ''
@@ -213,7 +220,9 @@ function instantiate(fixed_types,
    for i, f in ipairs(vararg_types) do
       local ty = abbrev_to_type[f]
       assert(ty ~= nil)
-      type_inst = string.format("%s\n    .x%s = %s,", type_inst, i-1, type_to_zero[ty])
+      local z = type_to_zero[ty]
+      if z == nil then z = string.format("{/*%s*/}", ty) end
+      type_inst = string.format("%s\n    .x%s = %s,", type_inst, i-1, z)
    end
    type_inst = string.format("%s\n    .val = %s,", type_inst, "x")
 
@@ -252,7 +261,20 @@ typedef __builtin_va_list va_list;
 #define va_end(ap) __builtin_va_end(ap)
 #define va_arg(ap, type) __builtin_va_arg(ap, type)
 #define NOINLINE // __attribute__((noinline))
+#define FORCEINLINE  __attribute__((always_inline))
 
+template <typename T0, typename T1>
+struct tup
+{
+ T0 x0;
+ T1 x1;
+};
+
+template <typename T0, typename T1>
+static bool operator==(tup<T0, T1> const& lhs, tup<T0, T1> const& rhs)
+{
+  return lhs.x0 == rhs.x0 & lhs.x1 == rhs.x1;
+}
 
 __attribute__((used))
 static void init_valist(void* buf, va_list*);
@@ -354,7 +376,13 @@ function body()
          {"i", "d", "d", },
          {"i", "d", "i", "d"},
          {"i", "42"})
-   
+
+   r = r ..
+      instantiate(
+         {"i",},
+         {"s_id",},
+         {"s_id", "{11, 3.14}",})
+
    return r
 end
 

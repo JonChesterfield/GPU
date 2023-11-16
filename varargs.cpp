@@ -4,7 +4,20 @@ typedef __builtin_va_list va_list;
 #define va_end(ap) __builtin_va_end(ap)
 #define va_arg(ap, type) __builtin_va_arg(ap, type)
 #define NOINLINE // __attribute__((noinline))
+#define FORCEINLINE  __attribute__((always_inline))
 
+template <typename T0, typename T1>
+struct tup
+{
+ T0 x0;
+ T1 x1;
+};
+
+template <typename T0, typename T1>
+static bool operator==(tup<T0, T1> const& lhs, tup<T0, T1> const& rhs)
+{
+  return lhs.x0 == rhs.x0 & lhs.x1 == rhs.x1;
+}
 
 __attribute__((used))
 static void init_valist(void* buf, va_list*);
@@ -64,7 +77,7 @@ struct __attribute__((packed)) f__v__buffer
 
 
 template <typename A>
-NOINLINE A f__v__middle(...)
+NOINLINE FORCEINLINE A f__v__middle(...)
 {
   va_list va;
   __builtin_va_start(va, 0);
@@ -74,7 +87,7 @@ NOINLINE A f__v__middle(...)
 }
 
 template <typename A>
-NOINLINE A f__v__ref_middle(va_list buffer)
+NOINLINE FORCEINLINE A f__v__ref_middle(va_list buffer)
 {
   va_list va;
   __builtin_va_copy(va, buffer);
@@ -84,14 +97,14 @@ NOINLINE A f__v__ref_middle(va_list buffer)
 }
 
 template <typename A>
-NOINLINE A f__v__outer(A x)
+NOINLINE FORCEINLINE A f__v__outer(A x)
 {
   A tmp = f__v__middle<A>(x);
   return tmp;
 }
 
 template <typename A>
-NOINLINE A f__v__ref_outer(A x)
+NOINLINE FORCEINLINE A f__v__ref_outer(A x)
 {
   f__v__buffer buffer = {
     .val = x,
@@ -103,7 +116,7 @@ NOINLINE A f__v__ref_outer(A x)
 }
 
 
-NOINLINE bool f__v__check(void)
+NOINLINE FORCEINLINE bool f__v__check(void)
 {
   using T = int;
   T x = 42;
@@ -111,7 +124,7 @@ NOINLINE bool f__v__check(void)
   return x == y;
 }
 
-NOINLINE bool f__v__ref_check(void)
+NOINLINE FORCEINLINE bool f__v__ref_check(void)
 {
   using T = int;
   T x = 42;
@@ -128,7 +141,7 @@ struct __attribute__((packed)) f_i_v__buffer
 
 
 template <typename A>
-NOINLINE A f_i_v__middle(int x0, ...)
+NOINLINE FORCEINLINE A f_i_v__middle(int x0, ...)
 {
   va_list va;
   __builtin_va_start(va, 0);
@@ -138,7 +151,7 @@ NOINLINE A f_i_v__middle(int x0, ...)
 }
 
 template <typename A>
-NOINLINE A f_i_v__ref_middle(int x0, va_list buffer)
+NOINLINE FORCEINLINE A f_i_v__ref_middle(int x0, va_list buffer)
 {
   va_list va;
   __builtin_va_copy(va, buffer);
@@ -148,14 +161,14 @@ NOINLINE A f_i_v__ref_middle(int x0, va_list buffer)
 }
 
 template <typename A>
-NOINLINE A f_i_v__outer(A x)
+NOINLINE FORCEINLINE A f_i_v__outer(A x)
 {
   A tmp = f_i_v__middle<A>(0, x);
   return tmp;
 }
 
 template <typename A>
-NOINLINE A f_i_v__ref_outer(A x)
+NOINLINE FORCEINLINE A f_i_v__ref_outer(A x)
 {
   f_i_v__buffer buffer = {
     .val = x,
@@ -167,7 +180,7 @@ NOINLINE A f_i_v__ref_outer(A x)
 }
 
 
-NOINLINE bool f_i_v__check(void)
+NOINLINE FORCEINLINE bool f_i_v__check(void)
 {
   using T = int;
   T x = 21;
@@ -175,7 +188,7 @@ NOINLINE bool f_i_v__check(void)
   return x == y;
 }
 
-NOINLINE bool f_i_v__ref_check(void)
+NOINLINE FORCEINLINE bool f_i_v__ref_check(void)
 {
   using T = int;
   T x = 21;
@@ -203,36 +216,44 @@ struct __attribute__((packed)) f__v_i_buffer
 
 
 template <typename A>
-NOINLINE A f__v_i_middle(...)
+NOINLINE FORCEINLINE A f__v_i_middle(...)
 {
   va_list va;
   __builtin_va_start(va, 0);
-  va_arg(va, int);
+  {
+    using T = int;
+    va_arg(va, T);
+  }
+
   A x = va_arg(va, A);
   va_end(va);
   return x;
 }
 
 template <typename A>
-NOINLINE A f__v_i_ref_middle(va_list buffer)
+NOINLINE FORCEINLINE A f__v_i_ref_middle(va_list buffer)
 {
   va_list va;
   __builtin_va_copy(va, buffer);
-  va_arg(va, int);
+  {
+    using T = int;
+    va_arg(va, T);
+  }
+
   A x = va_arg(va, A);
   va_end(va);
   return x;
 }
 
 template <typename A>
-NOINLINE A f__v_i_outer(A x)
+NOINLINE FORCEINLINE A f__v_i_outer(A x)
 {
   A tmp = f__v_i_middle<A>(0, x);
   return tmp;
 }
 
 template <typename A>
-NOINLINE A f__v_i_ref_outer(A x)
+NOINLINE FORCEINLINE A f__v_i_ref_outer(A x)
 {
   f__v_i_buffer buffer = {
     .x0 = 0,
@@ -245,7 +266,7 @@ NOINLINE A f__v_i_ref_outer(A x)
 }
 
 
-NOINLINE bool f__v_i_check(void)
+NOINLINE FORCEINLINE bool f__v_i_check(void)
 {
   using T = int;
   T x = 101;
@@ -253,7 +274,7 @@ NOINLINE bool f__v_i_check(void)
   return x == y;
 }
 
-NOINLINE bool f__v_i_ref_check(void)
+NOINLINE FORCEINLINE bool f__v_i_ref_check(void)
 {
   using T = int;
   T x = 101;
@@ -288,42 +309,74 @@ struct __attribute__((packed)) f_idd_v_idid_buffer
 
 
 template <typename A>
-NOINLINE A f_idd_v_idid_middle(int x0, double x1, double x2, ...)
+NOINLINE FORCEINLINE A f_idd_v_idid_middle(int x0, double x1, double x2, ...)
 {
   va_list va;
   __builtin_va_start(va, 0);
-  va_arg(va, int);
-  va_arg(va, double);
-  va_arg(va, int);
-  va_arg(va, double);
+  {
+    using T = int;
+    va_arg(va, T);
+  }
+
+  {
+    using T = double;
+    va_arg(va, T);
+  }
+
+  {
+    using T = int;
+    va_arg(va, T);
+  }
+
+  {
+    using T = double;
+    va_arg(va, T);
+  }
+
   A x = va_arg(va, A);
   va_end(va);
   return x;
 }
 
 template <typename A>
-NOINLINE A f_idd_v_idid_ref_middle(int x0, double x1, double x2, va_list buffer)
+NOINLINE FORCEINLINE A f_idd_v_idid_ref_middle(int x0, double x1, double x2, va_list buffer)
 {
   va_list va;
   __builtin_va_copy(va, buffer);
-  va_arg(va, int);
-  va_arg(va, double);
-  va_arg(va, int);
-  va_arg(va, double);
+  {
+    using T = int;
+    va_arg(va, T);
+  }
+
+  {
+    using T = double;
+    va_arg(va, T);
+  }
+
+  {
+    using T = int;
+    va_arg(va, T);
+  }
+
+  {
+    using T = double;
+    va_arg(va, T);
+  }
+
   A x = va_arg(va, A);
   va_end(va);
   return x;
 }
 
 template <typename A>
-NOINLINE A f_idd_v_idid_outer(A x)
+NOINLINE FORCEINLINE A f_idd_v_idid_outer(A x)
 {
   A tmp = f_idd_v_idid_middle<A>(0, 0.0, 0.0, 0, 0.0, 0, 0.0, x);
   return tmp;
 }
 
 template <typename A>
-NOINLINE A f_idd_v_idid_ref_outer(A x)
+NOINLINE FORCEINLINE A f_idd_v_idid_ref_outer(A x)
 {
   f_idd_v_idid_buffer buffer = {
     .x0 = 0,
@@ -339,7 +392,7 @@ NOINLINE A f_idd_v_idid_ref_outer(A x)
 }
 
 
-NOINLINE bool f_idd_v_idid_check(void)
+NOINLINE FORCEINLINE bool f_idd_v_idid_check(void)
 {
   using T = int;
   T x = 42;
@@ -347,11 +400,96 @@ NOINLINE bool f_idd_v_idid_check(void)
   return x == y;
 }
 
-NOINLINE bool f_idd_v_idid_ref_check(void)
+NOINLINE FORCEINLINE bool f_idd_v_idid_ref_check(void)
 {
   using T = int;
   T x = 42;
   T y = f_idd_v_idid_ref_outer<T>(x);
+  return x == y;
+}
+
+
+
+#if SLOT_ALIGN == 8
+struct __attribute__((packed)) f_i_v_s_id_buffer 
+{
+  tup<int,double> x0;
+  tup<int,double> val;
+};
+#endif
+#if SLOT_ALIGN == 4
+struct __attribute__((packed)) f_i_v_s_id_buffer 
+{
+  tup<int,double> x0;
+  tup<int,double> val;
+};
+#endif
+
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_id_middle(int x0, ...)
+{
+  va_list va;
+  __builtin_va_start(va, 0);
+  {
+    using T = tup<int,double>;
+    va_arg(va, T);
+  }
+
+  A x = va_arg(va, A);
+  va_end(va);
+  return x;
+}
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_id_ref_middle(int x0, va_list buffer)
+{
+  va_list va;
+  __builtin_va_copy(va, buffer);
+  {
+    using T = tup<int,double>;
+    va_arg(va, T);
+  }
+
+  A x = va_arg(va, A);
+  va_end(va);
+  return x;
+}
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_id_outer(A x)
+{
+  A tmp = f_i_v_s_id_middle<A>(0, tup<int,double>{}, x);
+  return tmp;
+}
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_id_ref_outer(A x)
+{
+  f_i_v_s_id_buffer buffer = {
+    .x0 = {/*tup<int,double>*/},
+    .val = x,
+  };
+  va_list ptr;
+  init_valist((void*)&buffer, &ptr);
+  A tmp = f_i_v_s_id_ref_middle<A>(0, ptr);
+  return tmp;
+}
+
+
+NOINLINE FORCEINLINE bool f_i_v_s_id_check(void)
+{
+  using T = tup<int,double>;
+  T x = {11, 3.14};
+  T y = f_i_v_s_id_outer<T>(x);
+  return x == y;
+}
+
+NOINLINE FORCEINLINE bool f_i_v_s_id_ref_check(void)
+{
+  using T = tup<int,double>;
+  T x = {11, 3.14};
+  T y = f_i_v_s_id_ref_outer<T>(x);
   return x == y;
 }
 
@@ -367,6 +505,8 @@ int main()
   if (!f__v_i_check()) { return 6;}
   if (!f_idd_v_idid_ref_check()) { return 7;}
   if (!f_idd_v_idid_check()) { return 8;}
+  if (!f_i_v_s_id_ref_check()) { return 9;}
+  if (!f_i_v_s_id_check()) { return 10;}
   return 0;
 }
 
