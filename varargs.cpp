@@ -3,8 +3,8 @@ typedef __builtin_va_list va_list;
 #define va_start(ap, ...) __builtin_va_start(ap, 0)
 #define va_end(ap) __builtin_va_end(ap)
 #define va_arg(ap, type) __builtin_va_arg(ap, type)
-#define NOINLINE // __attribute__((noinline))
-#define FORCEINLINE  __attribute__((always_inline))
+#define NOINLINE  __attribute__((noinline))
+#define FORCEINLINE  //__attribute__((always_inline))
 
 template <typename T0, typename T1>
 struct tup
@@ -61,9 +61,7 @@ static void init_valist(void* BUFFER, va_list * out)
 #define SLOT_ALIGN 4
 static void init_valist(void* BUFFER, va_list *out)
 {
-  va_list VAPTR;
-  __builtin_memcpy((char*)&VAPTR, &BUFFER, 8);
-  __builtin_memcpy(out, &VAPTR, sizeof(va_list));
+  *out = (char*)BUFFER;
 }
 #endif
 
@@ -494,6 +492,176 @@ NOINLINE FORCEINLINE bool f_i_v_s_id_ref_check(void)
 }
 
 
+
+#if SLOT_ALIGN == 8
+struct __attribute__((packed)) f_i_v_s_ii_buffer 
+{
+  tup<int,int> x0;
+  tup<int,int> val;
+};
+#endif
+#if SLOT_ALIGN == 4
+struct __attribute__((packed)) f_i_v_s_ii_buffer 
+{
+  tup<int,int> x0;
+  tup<int,int> val;
+};
+#endif
+
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_ii_middle(int x0, ...)
+{
+  va_list va;
+  __builtin_va_start(va, 0);
+  {
+    using T = tup<int,int>;
+    va_arg(va, T);
+  }
+
+  A x = va_arg(va, A);
+  va_end(va);
+  return x;
+}
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_ii_ref_middle(int x0, va_list buffer)
+{
+  va_list va;
+  __builtin_va_copy(va, buffer);
+  {
+    using T = tup<int,int>;
+    va_arg(va, T);
+  }
+
+  A x = va_arg(va, A);
+  va_end(va);
+  return x;
+}
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_ii_outer(A x)
+{
+  A tmp = f_i_v_s_ii_middle<A>(0, tup<int,int>{}, x);
+  return tmp;
+}
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_ii_ref_outer(A x)
+{
+  f_i_v_s_ii_buffer buffer = {
+    .x0 = {/*tup<int,int>*/},
+    .val = x,
+  };
+  va_list ptr;
+  init_valist((void*)&buffer, &ptr);
+  A tmp = f_i_v_s_ii_ref_middle<A>(0, ptr);
+  return tmp;
+}
+
+
+NOINLINE FORCEINLINE bool f_i_v_s_ii_check(void)
+{
+  using T = tup<int,int>;
+  T x = {11, 12};
+  T y = f_i_v_s_ii_outer<T>(x);
+  return x == y;
+}
+
+NOINLINE FORCEINLINE bool f_i_v_s_ii_ref_check(void)
+{
+  using T = tup<int,int>;
+  T x = {11, 12};
+  T y = f_i_v_s_ii_ref_outer<T>(x);
+  return x == y;
+}
+
+
+
+#if SLOT_ALIGN == 8
+struct __attribute__((packed)) f_i_v_s_if_buffer 
+{
+  tup<int,float> x0;
+  tup<int,float> val;
+};
+#endif
+#if SLOT_ALIGN == 4
+struct __attribute__((packed)) f_i_v_s_if_buffer 
+{
+  tup<int,float> x0;
+  tup<int,float> val;
+};
+#endif
+
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_if_middle(int x0, ...)
+{
+  va_list va;
+  __builtin_va_start(va, 0);
+  {
+    using T = tup<int,float>;
+    va_arg(va, T);
+  }
+
+  A x = va_arg(va, A);
+  va_end(va);
+  return x;
+}
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_if_ref_middle(int x0, va_list buffer)
+{
+  va_list va;
+  __builtin_va_copy(va, buffer);
+  {
+    using T = tup<int,float>;
+    va_arg(va, T);
+  }
+
+  A x = va_arg(va, A);
+  va_end(va);
+  return x;
+}
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_if_outer(A x)
+{
+  A tmp = f_i_v_s_if_middle<A>(0, tup<int,float>{}, x);
+  return tmp;
+}
+
+template <typename A>
+NOINLINE FORCEINLINE A f_i_v_s_if_ref_outer(A x)
+{
+  f_i_v_s_if_buffer buffer = {
+    .x0 = {/*tup<int,float>*/},
+    .val = x,
+  };
+  va_list ptr;
+  init_valist((void*)&buffer, &ptr);
+  A tmp = f_i_v_s_if_ref_middle<A>(0, ptr);
+  return tmp;
+}
+
+
+NOINLINE FORCEINLINE bool f_i_v_s_if_check(void)
+{
+  using T = tup<int,float>;
+  T x = {31, 3.14f};
+  T y = f_i_v_s_if_outer<T>(x);
+  return x == y;
+}
+
+NOINLINE FORCEINLINE bool f_i_v_s_if_ref_check(void)
+{
+  using T = tup<int,float>;
+  T x = {31, 3.14f};
+  T y = f_i_v_s_if_ref_outer<T>(x);
+  return x == y;
+}
+
+
 extern "C"
 int main()
 {
@@ -507,6 +675,10 @@ int main()
   if (!f_idd_v_idid_check()) { return 8;}
   if (!f_i_v_s_id_ref_check()) { return 9;}
   if (!f_i_v_s_id_check()) { return 10;}
+  if (!f_i_v_s_ii_ref_check()) { return 11;}
+  if (!f_i_v_s_ii_check()) { return 12;}
+  if (!f_i_v_s_if_ref_check()) { return 13;}
+  if (!f_i_v_s_if_check()) { return 14;}
   return 0;
 }
 

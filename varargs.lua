@@ -84,18 +84,24 @@ abbrev_to_type = {
    ["i"] = "int",
    ["f"] = "float",
    ["d"] = "double",
+   ["s_ii"] = "tup<int,int>",
+   ["s_if"] = "tup<int,float>",
    ["s_id"] = "tup<int,double>",
 }
 type_to_zero = {
    ["int"] = "0",
    ["float"] = "0.0f",
    ["double"] = "0.0",
+   ["s_ii"] = "{0, 0}",
+   ["s_if"] = "{0, 0.0f}",
    ["s_id"] = "{0, 0.0}",
 }
 type_to_size = {
    ["int"] = "4",
    ["float"] = "4",
    ["double"] = "8",
+   ["tup<int,int>"] = "8",
+   ["tup<int,float>"] = "8",
    ["tup<int,double>"] = "16",
 }
 
@@ -260,8 +266,8 @@ typedef __builtin_va_list va_list;
 #define va_start(ap, ...) __builtin_va_start(ap, 0)
 #define va_end(ap) __builtin_va_end(ap)
 #define va_arg(ap, type) __builtin_va_arg(ap, type)
-#define NOINLINE // __attribute__((noinline))
-#define FORCEINLINE  __attribute__((always_inline))
+#define NOINLINE  __attribute__((noinline))
+#define FORCEINLINE  //__attribute__((always_inline))
 
 template <typename T0, typename T1>
 struct tup
@@ -318,9 +324,7 @@ static void init_valist(void* BUFFER, va_list * out)
 #define SLOT_ALIGN 4
 static void init_valist(void* BUFFER, va_list *out)
 {
-  va_list VAPTR;
-  __builtin_memcpy((char*)&VAPTR, &BUFFER, 8);
-  __builtin_memcpy(out, &VAPTR, sizeof(va_list));
+  *out = (char*)BUFFER;
 }
 #endif
 
@@ -377,12 +381,30 @@ function body()
          {"i", "d", "i", "d"},
          {"i", "42"})
 
+   -- tup<int,double> is passed as an int and a double, separate arguments
    r = r ..
       instantiate(
          {"i",},
          {"s_id",},
          {"s_id", "{11, 3.14}",})
 
+   -- tup<int,int> is passed as [2 x i32]
+   r = r ..
+      instantiate(
+         {"i",},
+         {"s_ii",},
+         {"s_ii", "{11, 12}",})
+
+-- tup<int,float> is passed as [2 x i32] so that's really fun
+-- in combination with the float->double promotion varargs usually do
+   r = r ..
+      instantiate(
+         {"i",},
+         {"s_if",},
+         {"s_if", "{31, 3.14f}",})
+
+
+   
    return r
 end
 
