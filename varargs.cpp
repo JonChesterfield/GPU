@@ -3,8 +3,8 @@ typedef __builtin_va_list va_list;
 #define va_start(ap, ...) __builtin_va_start(ap, 0)
 #define va_end(ap) __builtin_va_end(ap)
 #define va_arg(ap, type) __builtin_va_arg(ap, type)
-#define NOINLINE  __attribute__((noinline))
-#define FORCEINLINE  //__attribute__((always_inline))
+#define NOINLINE  //__attribute__((noinline))
+#define FORCEINLINE  __attribute__((always_inline))
 
 template <typename T0, typename T1>
 struct tup
@@ -79,6 +79,12 @@ NOINLINE FORCEINLINE A f__v__middle(...)
 {
   va_list va;
   __builtin_va_start(va, 0);
+#if 0
+{
+  va_list * escape = &va;
+  asm volatile("" : "+r"(escape) :);
+}
+#endif
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -104,11 +110,11 @@ NOINLINE FORCEINLINE A f__v__outer(A x)
 template <typename A>
 NOINLINE FORCEINLINE A f__v__ref_outer(A x)
 {
-  f__v__buffer buffer = {
+  f__v__buffer vararg_buffer = {
     .val = x,
   };
   va_list ptr;
-  init_valist((void*)&buffer, &ptr);
+  init_valist((void*)&vararg_buffer, &ptr);
   A tmp = f__v__ref_middle<A>(ptr);
   return tmp;
 }
@@ -143,6 +149,12 @@ NOINLINE FORCEINLINE A f_i_v__middle(int x0, ...)
 {
   va_list va;
   __builtin_va_start(va, 0);
+#if 0
+{
+  va_list * escape = &va;
+  asm volatile("" : "+r"(escape) :);
+}
+#endif
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -168,11 +180,11 @@ NOINLINE FORCEINLINE A f_i_v__outer(A x)
 template <typename A>
 NOINLINE FORCEINLINE A f_i_v__ref_outer(A x)
 {
-  f_i_v__buffer buffer = {
+  f_i_v__buffer vararg_buffer = {
     .val = x,
   };
   va_list ptr;
-  init_valist((void*)&buffer, &ptr);
+  init_valist((void*)&vararg_buffer, &ptr);
   A tmp = f_i_v__ref_middle<A>(0, ptr);
   return tmp;
 }
@@ -223,6 +235,12 @@ NOINLINE FORCEINLINE A f__v_i_middle(...)
     va_arg(va, T);
   }
 
+#if 0
+{
+  va_list * escape = &va;
+  asm volatile("" : "+r"(escape) :);
+}
+#endif
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -253,12 +271,12 @@ NOINLINE FORCEINLINE A f__v_i_outer(A x)
 template <typename A>
 NOINLINE FORCEINLINE A f__v_i_ref_outer(A x)
 {
-  f__v_i_buffer buffer = {
+  f__v_i_buffer vararg_buffer = {
     .x0 = 0,
     .val = x,
   };
   va_list ptr;
-  init_valist((void*)&buffer, &ptr);
+  init_valist((void*)&vararg_buffer, &ptr);
   A tmp = f__v_i_ref_middle<A>(ptr);
   return tmp;
 }
@@ -331,6 +349,12 @@ NOINLINE FORCEINLINE A f_idd_v_idid_middle(int x0, double x1, double x2, ...)
     va_arg(va, T);
   }
 
+#if 0
+{
+  va_list * escape = &va;
+  asm volatile("" : "+r"(escape) :);
+}
+#endif
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -376,7 +400,7 @@ NOINLINE FORCEINLINE A f_idd_v_idid_outer(A x)
 template <typename A>
 NOINLINE FORCEINLINE A f_idd_v_idid_ref_outer(A x)
 {
-  f_idd_v_idid_buffer buffer = {
+  f_idd_v_idid_buffer vararg_buffer = {
     .x0 = 0,
     .x1 = 0.0,
     .x2 = 0,
@@ -384,7 +408,7 @@ NOINLINE FORCEINLINE A f_idd_v_idid_ref_outer(A x)
     .val = x,
   };
   va_list ptr;
-  init_valist((void*)&buffer, &ptr);
+  init_valist((void*)&vararg_buffer, &ptr);
   A tmp = f_idd_v_idid_ref_middle<A>(0, 0.0, 0.0, ptr);
   return tmp;
 }
@@ -434,6 +458,12 @@ NOINLINE FORCEINLINE A f_i_v_s_id_middle(int x0, ...)
     va_arg(va, T);
   }
 
+#if 0
+{
+  va_list * escape = &va;
+  asm volatile("" : "+r"(escape) :);
+}
+#endif
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -464,12 +494,12 @@ NOINLINE FORCEINLINE A f_i_v_s_id_outer(A x)
 template <typename A>
 NOINLINE FORCEINLINE A f_i_v_s_id_ref_outer(A x)
 {
-  f_i_v_s_id_buffer buffer = {
+  f_i_v_s_id_buffer vararg_buffer = {
     .x0 = {/*tup<int,double>*/},
     .val = x,
   };
   va_list ptr;
-  init_valist((void*)&buffer, &ptr);
+  init_valist((void*)&vararg_buffer, &ptr);
   A tmp = f_i_v_s_id_ref_middle<A>(0, ptr);
   return tmp;
 }
@@ -519,6 +549,12 @@ NOINLINE FORCEINLINE A f_i_v_s_ii_middle(int x0, ...)
     va_arg(va, T);
   }
 
+#if 0
+{
+  va_list * escape = &va;
+  asm volatile("" : "+r"(escape) :);
+}
+#endif
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -549,12 +585,12 @@ NOINLINE FORCEINLINE A f_i_v_s_ii_outer(A x)
 template <typename A>
 NOINLINE FORCEINLINE A f_i_v_s_ii_ref_outer(A x)
 {
-  f_i_v_s_ii_buffer buffer = {
+  f_i_v_s_ii_buffer vararg_buffer = {
     .x0 = {/*tup<int,int>*/},
     .val = x,
   };
   va_list ptr;
-  init_valist((void*)&buffer, &ptr);
+  init_valist((void*)&vararg_buffer, &ptr);
   A tmp = f_i_v_s_ii_ref_middle<A>(0, ptr);
   return tmp;
 }
@@ -604,6 +640,12 @@ NOINLINE FORCEINLINE A f_i_v_s_if_middle(int x0, ...)
     va_arg(va, T);
   }
 
+#if 0
+{
+  va_list * escape = &va;
+  asm volatile("" : "+r"(escape) :);
+}
+#endif
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -634,12 +676,12 @@ NOINLINE FORCEINLINE A f_i_v_s_if_outer(A x)
 template <typename A>
 NOINLINE FORCEINLINE A f_i_v_s_if_ref_outer(A x)
 {
-  f_i_v_s_if_buffer buffer = {
+  f_i_v_s_if_buffer vararg_buffer = {
     .x0 = {/*tup<int,float>*/},
     .val = x,
   };
   va_list ptr;
-  init_valist((void*)&buffer, &ptr);
+  init_valist((void*)&vararg_buffer, &ptr);
   A tmp = f_i_v_s_if_ref_middle<A>(0, ptr);
   return tmp;
 }

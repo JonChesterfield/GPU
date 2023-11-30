@@ -6,6 +6,8 @@ set -e
 IDIR=$HOME/llvm-install
 BDIR=$HOME/llvm-build
 
+DEBUG_IDIR=$HOME/llvm-build-debug/llvm
+
 ARCH=gfx1030
 
 LIBCNAME="libc.$ARCH.a"
@@ -42,7 +44,11 @@ DEBUG=""
 
 $IDIR/bin/clang++ $X64 $DEBUG -mllvm $EXPANDNONE varargs.cpp -O1 -emit-llvm -S -o varargs.x64.ll -Wno-varargs
 $IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs.x64.ll  -S -o varargs.lowered.x64.ll
-$IDIR/bin/opt $EXPANDNONE -O3  varargs.lowered.x64.ll  -S -o varargs.opt.x64.ll
+
+# $IDIR/bin/opt $EXPANDNONE -O1  varargs.lowered.x64.ll  -S -o varargs.wip.x64.ll
+# $DEBUG_IDIR/bin/opt $EXPANDNONE -O2  varargs.wip.x64.ll  -S -o varargs.wipO2.x64.ll
+$IDIR/bin/opt $EXPANDNONE -O2  varargs.lowered.x64.ll  -S -o varargs.opt.x64.ll
+
 $IDIR/bin/clang++ $X64 varargs.opt.x64.ll -S -o varargs.x64.s
 $IDIR/bin/clang++ $X64 varargs.opt.x64.ll -o varargs.x64.out
 
@@ -57,11 +63,14 @@ echo "X64 ret $RC"
 # nevertheless it does, should raise a bug for that. Expected to need to say that _start was a required symbol
 $IDIR/bin/clang++ $AMDGPU -mllvm $EXPANDNONE varargs.cpp -O1 -emit-llvm -S -o varargs.gcn.ll -Wno-varargs
 $IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs.gcn.ll  -S -o varargs.lowered.gcn.ll
-$IDIR/bin/opt $EXPANDNONE -O3  varargs.lowered.gcn.ll  -S -o varargs.opt.gcn.ll
+$DEBUG_IDIR/bin/opt $EXPANDNONE -O1  varargs.lowered.gcn.ll  -S -o - -print-after-all &> varargs.opt.gcn.ll
 $IDIR/bin/clang++ $AMDGPU varargs.opt.gcn.ll -S -o varargs.gcn.s
 $IDIR/bin/clang++ $AMDGPU varargs.opt.gcn.ll $LIBCNAME -o varargs.gcn.out
 
 # $IDIR/bin/llvm-nm --extern-only varargs.gcn.out
+
+echo "Not going to try running the GCN one, tired of rebooting the machine"
+exit 0
 
 # This invocation might return non-zero
 set +e

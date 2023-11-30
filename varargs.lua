@@ -11,6 +11,12 @@ NOINLINE FORCEINLINE A CASE_middle(FIXEDPARAMETER$...)
 {
   va_list va;
   __builtin_va_start(va, 0);VA_ARG_PREFIX
+#if 0
+{
+  va_list * escape = &va;
+  asm volatile("" : "+r"(escape) :);
+}
+#endif
   A x = va_arg(va, A);
   va_end(va);
   return x;
@@ -38,7 +44,7 @@ NOINLINE FORCEINLINE A CASE_ref_outer(A x)
 {
 BUFFER_VALIST
   va_list ptr;
-  init_valist((void*)&buffer, &ptr);
+  init_valist((void*)&vararg_buffer, &ptr);
   A tmp = CASE_ref_middle<A>(FIXEDARGUMENT$ptr);
   return tmp;
 }
@@ -221,7 +227,7 @@ function instantiate(fixed_types,
    type_def = type_def:gsub("CASE", case_name)   
 
    local type_inst = [[
-  CASE_buffer buffer = {]]
+  CASE_buffer vararg_buffer = {]]
 
    for i, f in ipairs(vararg_types) do
       local ty = abbrev_to_type[f]
@@ -266,8 +272,8 @@ typedef __builtin_va_list va_list;
 #define va_start(ap, ...) __builtin_va_start(ap, 0)
 #define va_end(ap) __builtin_va_end(ap)
 #define va_arg(ap, type) __builtin_va_arg(ap, type)
-#define NOINLINE  __attribute__((noinline))
-#define FORCEINLINE  //__attribute__((always_inline))
+#define NOINLINE  //__attribute__((noinline))
+#define FORCEINLINE  __attribute__((always_inline))
 
 template <typename T0, typename T1>
 struct tup
@@ -357,7 +363,7 @@ end
 function body()
    local r = ''
 
-   r = r ..
+      r = r ..
       instantiate(
          {},
          {},
@@ -381,6 +387,7 @@ function body()
          {"i", "d", "i", "d"},
          {"i", "42"})
 
+
    -- tup<int,double> is passed as an int and a double, separate arguments
    r = r ..
       instantiate(
@@ -395,16 +402,14 @@ function body()
          {"s_ii",},
          {"s_ii", "{11, 12}",})
 
--- tup<int,float> is passed as [2 x i32] so that's really fun
--- in combination with the float->double promotion varargs usually do
+   -- tup<int,float> is passed as [2 x i32] so that's really fun
+   -- in combination with the float->double promotion varargs usually do
    r = r ..
       instantiate(
          {"i",},
          {"s_if",},
          {"s_if", "{31, 3.14f}",})
 
-
-   
    return r
 end
 
