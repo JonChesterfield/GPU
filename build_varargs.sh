@@ -17,7 +17,7 @@ LIBCNAME="libc.$ARCH.a"
 # $(find -name amdhsa_loader) image
 # The loader isn't installed, can dig it out of build
 
-AMDGPU="--target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -Xclang -fconvergent-functions -nogpulib -ffreestanding -fno-builtin -fno-exceptions -fno-rtti -nostdinc  -Wl,-mllvm,-amdgpu-lower-global-ctor-dtor=0"
+AMDGPU="--target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -Xclang -fconvergent-functions -nogpulib -ffreestanding -fno-builtin -fno-exceptions -fno-rtti -nostdinc  -Wl,-mllvm,-amdgpu-lower-global-ctor-dtor=0 -Xclang -mcode-object-version=4"
 X64="-ffreestanding -fno-builtin -fno-exceptions -fno-rtti -nostdinc"
 
 LOADER=$(find ~/llvm-build/ -type f -iname 'amdhsa_loader')
@@ -63,11 +63,19 @@ echo "X64 ret $RC"
 # nevertheless it does, should raise a bug for that. Expected to need to say that _start was a required symbol
 $IDIR/bin/clang++ $AMDGPU -mllvm $EXPANDNONE varargs.cpp -O1 -emit-llvm -S -o varargs.gcn.ll -Wno-varargs
 $IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs.gcn.ll  -S -o varargs.lowered.gcn.ll
-$DEBUG_IDIR/bin/opt $EXPANDNONE -O1  varargs.lowered.gcn.ll  -S -o - -print-after-all &> varargs.opt.gcn.ll
+$IDIR/bin/opt $EXPANDNONE -O1  varargs.lowered.gcn.ll  -S -o - &> varargs.opt.gcn.ll
 $IDIR/bin/clang++ $AMDGPU varargs.opt.gcn.ll -S -o varargs.gcn.s
 $IDIR/bin/clang++ $AMDGPU varargs.opt.gcn.ll $LIBCNAME -o varargs.gcn.out
 
 # $IDIR/bin/llvm-nm --extern-only varargs.gcn.out
+
+
+$IDIR/bin/clang++ $AMDGPU -mllvm $EXPANDNONE varargs_pairs.cpp -O1 -emit-llvm -S -o varargs_pairs.gcn.ll -Wno-varargs
+$IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs_pairs.gcn.ll  -S -o varargs_pairs.lowered.gcn.ll
+$IDIR/bin/opt $EXPANDNONE -O1  varargs_pairs.lowered.gcn.ll  -S -o - &> varargs_pairs.opt.gcn.ll
+$IDIR/bin/clang++ $AMDGPU varargs_pairs.opt.gcn.ll -S -o varargs_pairs.gcn.s
+$IDIR/bin/clang++ $AMDGPU varargs_pairs.opt.gcn.ll $LIBCNAME -o varargs_pairs.gcn.out
+
 
 echo "Not going to try running the GCN one, tired of rebooting the machine"
 exit 0
