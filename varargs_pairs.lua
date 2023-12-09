@@ -84,9 +84,10 @@ void valist_NAME_call(LHSType x, RHSType y)
 }
 #endif
 
+
 ]]
 
-local types = {'int', 'long', 'double', '__m128', '__m256',}
+local types = {'int', 'long', 'double', '__m128', '__m256', 'libcS',}
 local non_promoted_types = {'char', 'short', 'float'}
 
 local typenames = {}
@@ -110,14 +111,15 @@ do
       iter[#iter+1] = i
    end
    
-   for _,i in ipairs(iter) do
-      for _,j in ipairs(iter) do
-         local k = string.format('pair<%s,%s>',i,j)
-         r[#r+1] = k           
-         typenames[k] = string.format('pair_%s_%s',typenames[i],typenames[j])
+      for _,i in ipairs(iter) do
+         r[#r+1] = i
+         for _,j in ipairs(iter) do
+            local k = string.format('pair<%s,%s>',i,j)
+            r[#r+1] = k           
+            typenames[k] = string.format('pair_%s_%s',typenames[i],typenames[j])
+         end
       end
-   end
-   types = r
+      types = r
 end
 
 local count = 0
@@ -141,7 +143,7 @@ for _,i in ipairs(types) do
       r = r .. t
       
       main = main .. string.format([[
-  if (!check_va_arg<%s, %s>()) {
+  if (!variadic_check_va_arg<%s, %s>()) {
     return %s;
   }
 

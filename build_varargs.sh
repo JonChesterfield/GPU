@@ -45,12 +45,19 @@ DEBUG=""
 $IDIR/bin/clang++ $X64 $DEBUG -mllvm $EXPANDNONE varargs.cpp -O1 -emit-llvm -S -o varargs.x64.ll -Wno-varargs
 $IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs.x64.ll  -S -o varargs.lowered.x64.ll
 
-# $IDIR/bin/opt $EXPANDNONE -O1  varargs.lowered.x64.ll  -S -o varargs.wip.x64.ll
-# $DEBUG_IDIR/bin/opt $EXPANDNONE -O2  varargs.wip.x64.ll  -S -o varargs.wipO2.x64.ll
 $IDIR/bin/opt $EXPANDNONE -O2  varargs.lowered.x64.ll  -S -o varargs.opt.x64.ll
 
 $IDIR/bin/clang++ $X64 varargs.opt.x64.ll -S -o varargs.x64.s
 $IDIR/bin/clang++ $X64 varargs.opt.x64.ll -o varargs.x64.out
+
+$IDIR/bin/clang++ $X64 $DEBUG -mllvm $EXPANDNONE varargs_pairs.cpp -O1 -emit-llvm -S -o varargs_pairs.x64.ll -Wno-varargs
+$IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs_pairs.x64.ll  -S -o varargs_pairs.lowered.x64.ll
+
+$IDIR/bin/opt $EXPANDNONE -O2  varargs_pairs.lowered.x64.ll  -S -o varargs_pairs.opt.x64.ll
+
+$IDIR/bin/clang++ $X64 varargs_pairs.opt.x64.ll -S -o varargs_pairs.x64.s
+$IDIR/bin/clang++ $X64 varargs_pairs.opt.x64.ll -o varargs_pairs.x64.out
+
 
 set +e
 ./varargs.x64.out

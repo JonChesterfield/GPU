@@ -11,7 +11,7 @@ typedef __builtin_va_list va_list;
 
 // llvm can optimise out the calls entirely, this is a way
 // to encourage the lowering to execute at runtime
-#define FUNCTION_ATTRIBUTE __attribute__((noinline))
+#define FUNCTION_ATTRIBUTE // __attribute__((noinline))
 
 #if HAS_IOSTREAM
 #include <iostream>
@@ -87,7 +87,6 @@ typedef float __m128 __attribute__((__vector_size__(16), __aligned__(16)));
 typedef float __m256 __attribute__((__vector_size__(32), __aligned__(32)));
 
 static_assert(alignof(__m128) == 16, "");
-
 static_assert(alignof(__m256) == 32, "");
 
 template <typename T, typename U> struct pair {
@@ -111,7 +110,22 @@ static bool eq(__m256 lhs, __m256 rhs) {
   return eq;
 }
 
+// An instance used by the libc testing
+struct libcS {
+  char c;
+  short s;
+  int i;
+  long l;
+  float f;
+  double d;
+};
+
 template <typename T> static bool eq(T x, T y) { return x == y; }
+
+static bool eq(libcS x, libcS y) {
+  return eq(x.c, y.c) & eq(x.s, y.s) & eq(x.i, y.i) & eq(x.l, y.l) &
+         eq(x.f, y.f) & eq(x.d, y.d);
+}
 
 template <typename T, typename U> static bool eq(pair<T, U> x, pair<T, U> y) {
   return eq(x.first, y.first) & eq(x.second, y.second);
@@ -154,6 +168,9 @@ std::ostream &operator<<(std::ostream &os, pair<T, U> const &rhs) {
 #endif
 
 namespace {
+
+// same one used by libc tests
+void init(libcS *x) { *x = (libcS){'\x1', 2, 3, 4l, 5.0f, 6.0}; }
 
 void init(float *x) { *x = 13.14; }
 void init(short *x) { *x = 101; }
@@ -285,13 +302,43 @@ template <typename X, typename Y> void describe() {
 #endif
 }
 
-template <typename X, typename Y> FUNCTION_ATTRIBUTE X get_first(va_list v) {
-  return va_arg(v, X);
+template <typename X, typename Y> FUNCTION_ATTRIBUTE X get_first(va_list va) {
+  return va_arg(va, X);
 }
 
-template <typename X, typename Y> FUNCTION_ATTRIBUTE Y get_second(va_list v) {
-  va_arg(v, X);
-  return va_arg(v, Y);
+template <typename X, typename Y> FUNCTION_ATTRIBUTE Y get_second(va_list va) {
+  va_arg(va, X);
+  return va_arg(va, Y);
+}
+
+template <typename X, typename Y> FUNCTION_ATTRIBUTE X variadic_get_first(...) {
+  va_list va;
+  __builtin_va_start(va, 0);
+  X r = va_arg(va, X);
+  va_end(va);
+  return r;
+}
+
+template <typename X, typename Y>
+FUNCTION_ATTRIBUTE Y variadic_get_second(...) {
+  va_list va;
+  __builtin_va_start(va, 0);
+  va_arg(va, X);
+  Y r = va_arg(va, Y);
+  va_end(va);
+  return r;
+}
+
+template <typename X, typename Y>
+FUNCTION_ATTRIBUTE bool variadic_can_get_first(X x, Y y) {
+  X r = variadic_get_first<X, Y>(x, y);
+  return eq(r, x);
+}
+
+template <typename X, typename Y>
+FUNCTION_ATTRIBUTE bool variadic_can_get_second(X x, Y y) {
+  Y r = variadic_get_second<X, Y>(x, y);
+  return eq(r, y);
 }
 
 template <typename X, typename Y>
@@ -360,6 +407,21 @@ template <typename X, typename Y> FUNCTION_ATTRIBUTE bool check_va_arg() {
 
   return f & s;
 }
+
+template <typename X, typename Y>
+FUNCTION_ATTRIBUTE bool variadic_check_va_arg() {
+  X x;
+  Y y;
+
+  init(&x);
+  init(&y);
+
+  bool f = variadic_can_get_first<X, Y>(x, y);
+  bool s = variadic_can_get_second<X, Y>(x, y);
+
+  return f & s;
+}
+
 } // namespace
 
 #if 0
