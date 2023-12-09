@@ -78,6 +78,8 @@ $IDIR/bin/clang++ $AMDGPU varargs_pairs.opt.gcn.ll $LIBCNAME -o varargs_pairs.gc
 
 
 echo "Not going to try running the GCN one, tired of rebooting the machine"
+
+echo "$LOADER varargs_pairs.gcn.out"
 exit 0
 
 # This invocation might return non-zero

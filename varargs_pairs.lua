@@ -1,5 +1,10 @@
 local r = [[
+
+#define UNDEF_SYMBOL_OK 0
 #include "varargs_pairs.hpp"
+
+
+#define GET_FIRST_SECOND_ATTRIBUTE static __attribute__((unused))
 
 ]]
 
@@ -11,7 +16,7 @@ extern "C" int main()
 
 local template = [[
 
-__attribute__((used))
+GET_FIRST_SECOND_ATTRIBUTE
 LHSType variadic_NAME_get_first(...)
 {
   va_list va;
@@ -22,14 +27,14 @@ LHSType variadic_NAME_get_first(...)
   return r;
 }
 
-__attribute__((used))
+GET_FIRST_SECOND_ATTRIBUTE
 LHSType valist_NAME_get_first(va_list va)
 {
   using T = LHSType;
   return va_arg(va, T);
 }
 
-__attribute__((used))
+GET_FIRST_SECOND_ATTRIBUTE
 RHSType variadic_NAME_get_second(...)
 {
   va_list va;
@@ -42,7 +47,7 @@ RHSType variadic_NAME_get_second(...)
   return r;
 }
 
-__attribute__((used))
+GET_FIRST_SECOND_ATTRIBUTE
 RHSType valist_NAME_get_second(va_list va)
 {
   using T = LHSType;
@@ -52,6 +57,7 @@ RHSType valist_NAME_get_second(va_list va)
 }
 
 
+#if UNDEF_SYMBOL_OK
 void variadic_NAME_target(...);
 void valist_NAME_target(va_list);
 
@@ -76,14 +82,18 @@ void valist_NAME_call(LHSType x, RHSType y)
 
   va_end(va);
 }
-
+#endif
 
 ]]
 
 local types = {'int', 'long', 'double', '__m128', '__m256',}
+local non_promoted_types = {'char', 'short', 'float'}
 
 local typenames = {}
 for _,i in ipairs(types) do
+   typenames[i] = i
+end
+for _,i in ipairs(non_promoted_types) do
    typenames[i] = i
 end
 
@@ -92,8 +102,16 @@ typenames['__m256'] ='m256'
 
 do
    local r = {}
+   local iter = {}
    for _,i in ipairs(types) do
-      for _,j in ipairs(types) do
+      iter[#iter+1] = i
+   end
+      for _,i in ipairs(non_promoted_types) do
+      iter[#iter+1] = i
+   end
+   
+   for _,i in ipairs(iter) do
+      for _,j in ipairs(iter) do
          local k = string.format('pair<%s,%s>',i,j)
          r[#r+1] = k           
          typenames[k] = string.format('pair_%s_%s',typenames[i],typenames[j])

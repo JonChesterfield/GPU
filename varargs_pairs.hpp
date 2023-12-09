@@ -9,6 +9,10 @@ typedef __builtin_va_list va_list;
 
 #define HAS_IOSTREAM 0
 
+// llvm can optimise out the calls entirely, this is a way
+// to encourage the lowering to execute at runtime
+#define FUNCTION_ATTRIBUTE __attribute__((noinline))
+
 #if HAS_IOSTREAM
 #include <iostream>
 #endif
@@ -150,9 +154,12 @@ std::ostream &operator<<(std::ostream &os, pair<T, U> const &rhs) {
 #endif
 
 namespace {
-void init(double *x) { *x = 3.14; }
 
+void init(float *x) { *x = 13.14; }
+void init(short *x) { *x = 101; }
 void init(char *x) { *x = 42; }
+
+void init(double *x) { *x = 3.14; }
 
 void init(int *x) { *x = 7; }
 
@@ -278,16 +285,17 @@ template <typename X, typename Y> void describe() {
 #endif
 }
 
-template <typename X, typename Y> X get_first(va_list v) {
+template <typename X, typename Y> FUNCTION_ATTRIBUTE X get_first(va_list v) {
   return va_arg(v, X);
 }
 
-template <typename X, typename Y> Y get_second(va_list v) {
+template <typename X, typename Y> FUNCTION_ATTRIBUTE Y get_second(va_list v) {
   va_arg(v, X);
   return va_arg(v, Y);
 }
 
-template <typename X, typename Y> bool can_get_first(X x, Y y) {
+template <typename X, typename Y>
+FUNCTION_ATTRIBUTE bool can_get_first(X x, Y y) {
   buffer_type<X, Y, get_pad<X, Y>()> buffer = {.x = x, .y = y};
 
   va_list va;
@@ -312,7 +320,8 @@ template <typename X, typename Y> bool can_get_first(X x, Y y) {
   return e;
 }
 
-template <typename X, typename Y> bool can_get_second(X x, Y y) {
+template <typename X, typename Y>
+FUNCTION_ATTRIBUTE bool can_get_second(X x, Y y) {
   buffer_type<X, Y, get_pad<X, Y>()> buffer = {.x = x, .y = y};
 
   va_list va;
@@ -336,7 +345,7 @@ template <typename X, typename Y> bool can_get_second(X x, Y y) {
   return e;
 }
 
-template <typename X, typename Y> bool check_va_arg() {
+template <typename X, typename Y> FUNCTION_ATTRIBUTE bool check_va_arg() {
   X x;
   Y y;
 
