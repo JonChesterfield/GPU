@@ -246,6 +246,8 @@ struct __attribute__((packed)) buffer_type;
 
 template <typename X, typename Y>
 struct __attribute__((packed)) buffer_type<X, Y, 0u> {
+  buffer_type(X x, Y y) : x(x), y(y) {};
+  buffer_type() {}
   X x;
   Y y;
   enum {type_align = get_align<X, Y>()};
@@ -253,6 +255,8 @@ struct __attribute__((packed)) buffer_type<X, Y, 0u> {
 
 template <typename X, typename Y, unsigned pad>
 struct __attribute__((packed)) buffer_type {
+  buffer_type(X x, Y y) : x(x), _p{}, y(y) {};
+  buffer_type() {}
   X x;
   char _p[pad];
   Y y;
@@ -279,7 +283,8 @@ template <typename X, typename Y> void layout() {
 }
 
 template <typename X, typename Y> void describe() {
-  buffer_type<X, Y, get_pad<X, Y>()> buffer;
+  using T = buffer_type<X, Y, get_pad<X, Y>()>;
+  alignas(T::type_align) T buffer;
   va_list va;
   init_valist((void *)&buffer, &va);
 
@@ -354,7 +359,7 @@ FUNCTION_ATTRIBUTE bool variadic_can_get_second(X x, Y y) {
 template <typename X, typename Y>
 FUNCTION_ATTRIBUTE bool can_get_first(X x, Y y) {
   using T = buffer_type<X, Y, get_pad<X, Y>()>;
-  alignas(T::type_align) T buffer = {.x = x, .y = y};
+  alignas(T::type_align) T buffer (x, y);
   
   va_list va;
   init_valist((void *)&buffer, &va);
@@ -381,7 +386,7 @@ FUNCTION_ATTRIBUTE bool can_get_first(X x, Y y) {
 template <typename X, typename Y>
 FUNCTION_ATTRIBUTE bool can_get_second(X x, Y y) {
   using T = buffer_type<X, Y, get_pad<X, Y>()>;
-  alignas(T::type_align) T buffer = {.x = x, .y = y};
+  alignas(T::type_align) T buffer (x, y);
 
   va_list va;
   init_valist((void *)&buffer, &va);

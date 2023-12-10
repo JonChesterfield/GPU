@@ -88,7 +88,7 @@ void valist_NAME_call(LHSType x, RHSType y)
   using X = LHSType;
   using Y = RHSType;
   constexpr unsigned P = get_pad<X,Y>();
-  buffer_type<X, Y, P> buffer = {.x = x, .y = y};
+  buffer_type<X, Y, P> buffer (x, y);
 
   va_list varargs;
   init_valist((void*)&buffer, &varargs);
@@ -113,8 +113,14 @@ void variadic_NAME_call(LHSType x, RHSType y)
 ]]
 
 -- vector types currently failing on x64, might be related to -mavx
-local types = {'int', 'long', 'double', 'libcS',  }-- '__m128', '__m256',}
+local types = {'int', 'long', 'double', 'libcS',  '__m128', '__m256',}
 local non_promoted_types = {'char', 'short', 'float'}
+
+local disable_pairs = true
+
+types = {'int', '__m128', }
+non_promoted_types = {}
+
 
 local typenames = {}
 for _,i in ipairs(types) do
@@ -138,8 +144,6 @@ do
       types_to_gen_pairs_from[#types_to_gen_pairs_from+1] = i
    end
 end
-
-local disable_pairs = true
 
 do
    local r = {}
