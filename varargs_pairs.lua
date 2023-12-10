@@ -139,7 +139,7 @@ do
    end
 end
 
-local disable_pairs = false
+local disable_pairs = true
 
 do
    local r = {}
@@ -165,7 +165,6 @@ local count = 0
 
 for _,i in ipairs(types) do
    for _,j in ipairs(types) do
-      count = count + 1
 
       local name = string.format([[%s_%s]],typenames[i], typenames[j])
 
@@ -181,12 +180,22 @@ for _,i in ipairs(types) do
       
       r = r .. t
       
+      count = count + 1
+      main = main .. string.format([[
+  if (!check_va_arg<%s, %s>()) {
+    return %s;
+  }
+
+]], i, j, count)
+
+      count = count + 1
       main = main .. string.format([[
   if (!variadic_check_va_arg<%s, %s>()) {
     return %s;
   }
 
 ]], i, j, count)
+      
    end
 end
    

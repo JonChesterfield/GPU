@@ -215,7 +215,8 @@ template <unsigned x, unsigned y> static constexpr unsigned max() {
 }
 
 template <typename X, typename Y> static constexpr unsigned get_align() {
-  return max<alignof(X), alignof(Y)>();
+  constexpr unsigned of_types = max<alignof(X), alignof(Y)>();
+  return MAX_SLOT_ALIGN ? min<of_types, MAX_SLOT_ALIGN>() : of_types;
 }
 
 template <typename X, typename Y> static constexpr unsigned get_pad() {
@@ -233,20 +234,29 @@ template <typename X, typename Y> static constexpr unsigned get_pad() {
   return Rem == 0 ? 0 : Padding;
 }
 
+
+
+// packed structs have aligment of 1
+// even if attribute applied to struct (presumably a bug)
+// can sometimes set alignment on the first field, but that can run into
+// error: requested alignment is less than minimum alignment of 8 for type
+// so we're stuck with a type_align field and setting alignment on instances
 template <typename X, typename Y, unsigned pad>
 struct __attribute__((packed)) buffer_type;
 
 template <typename X, typename Y>
 struct __attribute__((packed)) buffer_type<X, Y, 0u> {
-  _Alignas(get_align<X, Y>()) X x;
+  X x;
   Y y;
+  enum {type_align = get_align<X, Y>()};
 };
 
 template <typename X, typename Y, unsigned pad>
 struct __attribute__((packed)) buffer_type {
-  _Alignas(get_align<X, Y>()) X x;
+  X x;
   char _p[pad];
   Y y;
+  enum {type_align = get_align<X, Y>()};
 };
 
 namespace {
@@ -343,8 +353,9 @@ FUNCTION_ATTRIBUTE bool variadic_can_get_second(X x, Y y) {
 
 template <typename X, typename Y>
 FUNCTION_ATTRIBUTE bool can_get_first(X x, Y y) {
-  buffer_type<X, Y, get_pad<X, Y>()> buffer = {.x = x, .y = y};
-
+  using T = buffer_type<X, Y, get_pad<X, Y>()>;
+  alignas(T::type_align) T buffer = {.x = x, .y = y};
+  
   va_list va;
   init_valist((void *)&buffer, &va);
 
@@ -369,7 +380,8 @@ FUNCTION_ATTRIBUTE bool can_get_first(X x, Y y) {
 
 template <typename X, typename Y>
 FUNCTION_ATTRIBUTE bool can_get_second(X x, Y y) {
-  buffer_type<X, Y, get_pad<X, Y>()> buffer = {.x = x, .y = y};
+  using T = buffer_type<X, Y, get_pad<X, Y>()>;
+  alignas(T::type_align) T buffer = {.x = x, .y = y};
 
   va_list va;
   init_valist((void *)&buffer, &va);
