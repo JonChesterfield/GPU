@@ -18,7 +18,7 @@ LIBCNAME="libc.$ARCH.a"
 # The loader isn't installed, can dig it out of build
 
 AMDGPU="--target=amdgcn-amd-amdhsa -march=$ARCH -mcpu=$ARCH -Xclang -fconvergent-functions -nogpulib -ffreestanding -fno-builtin -fno-exceptions -fno-rtti -nostdinc  -Wl,-mllvm,-amdgpu-lower-global-ctor-dtor=0 -Xclang -mcode-object-version=4"
-X64="-ffreestanding -fno-builtin -fno-exceptions -fno-rtti -nostdinc"
+X64="-ffreestanding -fno-builtin -fno-exceptions -fno-rtti -nostdinc -mavx"
 
 LOADER=$(find ~/llvm-build/ -type f -iname 'amdhsa_loader')
 
@@ -66,6 +66,50 @@ set -e
 
 echo "X64 ret $RC"
 
+# build pairs first
+$IDIR/bin/clang++ $AMDGPU -mllvm $EXPANDNONE varargs_pairs.cpp -O1 -emit-llvm -S -o varargs_pairs.gcn.ll -Wno-varargs
+$IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs_pairs.gcn.ll  -S -o varargs_pairs.lowered.gcn.ll
+$IDIR/bin/opt $EXPANDNONE -O1  varargs_pairs.lowered.gcn.ll  -S -o - &> varargs_pairs.opt.gcn.ll
+$IDIR/bin/clang++ $AMDGPU varargs_pairs.opt.gcn.ll -S -o varargs_pairs.gcn.s
+$IDIR/bin/clang++ $AMDGPU varargs_pairs.opt.gcn.ll $LIBCNAME -o varargs_pairs.gcn.out
+
+
+ONLY_VARIADIC="-DEMIT_UNDEF_SYMBOLS=1 -DEMIT_MAIN_SYMBOL=0 -DEMIT_VARIADIC_SYMBOLS=1 -DEMIT_VALIST_SYMBOLS=0"
+
+ONLY_VALIST="-DEMIT_UNDEF_SYMBOLS=1 -DEMIT_MAIN_SYMBOL=0 -DEMIT_VARIADIC_SYMBOLS=0 -DEMIT_VALIST_SYMBOLS=1"
+
+
+
+# emit varidic&valist for comparison
+
+$IDIR/bin/clang++ $AMDGPU -mllvm $EXPANDNONE $ONLY_VARIADIC varargs_pairs.cpp -O1 -emit-llvm -S  -Wno-varargs -o varargs_pairs.variadic.gcn.ll
+
+$IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs_pairs.variadic.gcn.ll  -S -o varargs_pairs.variadic.lowered.gcn.ll
+$IDIR/bin/opt $EXPANDNONE -O1  varargs_pairs.variadic.lowered.gcn.ll  -S -o - &> varargs_pairs.variadic.opt.gcn.ll
+$IDIR/bin/clang++ $AMDGPU varargs_pairs.variadic.opt.gcn.ll -S -o varargs_pairs.variadic.gcn.s
+
+$IDIR/bin/clang++ $AMDGPU -mllvm $EXPANDNONE $ONLY_VALIST varargs_pairs.cpp -O1 -emit-llvm -S  -Wno-varargs -o varargs_pairs.valist.gcn.ll
+
+$IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs_pairs.valist.gcn.ll  -S -o varargs_pairs.valist.lowered.gcn.ll
+$IDIR/bin/opt $EXPANDNONE -O1  varargs_pairs.valist.lowered.gcn.ll  -S -o - &> varargs_pairs.valist.opt.gcn.ll
+$IDIR/bin/clang++ $AMDGPU varargs_pairs.valist.opt.gcn.ll -S -o varargs_pairs.valist.gcn.s
+
+
+$IDIR/bin/clang++ $X64 -mllvm $EXPANDNONE $ONLY_VARIADIC varargs_pairs.cpp -O1 -emit-llvm -S  -Wno-varargs -o varargs_pairs.variadic.x64.ll
+
+$IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs_pairs.variadic.x64.ll  -S -o varargs_pairs.variadic.lowered.x64.ll
+$IDIR/bin/opt $EXPANDNONE -O1  varargs_pairs.variadic.lowered.x64.ll  -S -o - &> varargs_pairs.variadic.opt.x64.ll
+$IDIR/bin/clang++ $X64 varargs_pairs.variadic.opt.x64.ll -S -o varargs_pairs.variadic.x64.s
+
+$IDIR/bin/clang++ $X64 -mllvm $EXPANDNONE $ONLY_VALIST varargs_pairs.cpp -O1 -emit-llvm -S  -Wno-varargs -o varargs_pairs.valist.x64.ll
+
+$IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs_pairs.valist.x64.ll  -S -o varargs_pairs.valist.lowered.x64.ll
+$IDIR/bin/opt $EXPANDNONE -O1  varargs_pairs.valist.lowered.x64.ll  -S -o - &> varargs_pairs.valist.opt.x64.ll
+$IDIR/bin/clang++ $X64 varargs_pairs.valist.opt.x64.ll -S -o varargs_pairs.valist.x64.s
+
+
+
+
 # This shouldn't work - there are no unresolved symbols in the first file to justify linking files from the archive
 # nevertheless it does, should raise a bug for that. Expected to need to say that _start was a required symbol
 $IDIR/bin/clang++ $AMDGPU -mllvm $EXPANDNONE varargs.cpp -O1 -emit-llvm -S -o varargs.gcn.ll -Wno-varargs
@@ -76,12 +120,6 @@ $IDIR/bin/clang++ $AMDGPU varargs.opt.gcn.ll $LIBCNAME -o varargs.gcn.out
 
 # $IDIR/bin/llvm-nm --extern-only varargs.gcn.out
 
-
-$IDIR/bin/clang++ $AMDGPU -mllvm $EXPANDNONE varargs_pairs.cpp -O1 -emit-llvm -S -o varargs_pairs.gcn.ll -Wno-varargs
-$IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs_pairs.gcn.ll  -S -o varargs_pairs.lowered.gcn.ll
-$IDIR/bin/opt $EXPANDNONE -O1  varargs_pairs.lowered.gcn.ll  -S -o - &> varargs_pairs.opt.gcn.ll
-$IDIR/bin/clang++ $AMDGPU varargs_pairs.opt.gcn.ll -S -o varargs_pairs.gcn.s
-$IDIR/bin/clang++ $AMDGPU varargs_pairs.opt.gcn.ll $LIBCNAME -o varargs_pairs.gcn.out
 
 
 echo "Not going to try running the GCN one, tired of rebooting the machine"

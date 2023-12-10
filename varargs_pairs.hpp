@@ -11,7 +11,7 @@ typedef __builtin_va_list va_list;
 
 // llvm can optimise out the calls entirely, this is a way
 // to encourage the lowering to execute at runtime
-#define FUNCTION_ATTRIBUTE // __attribute__((noinline))
+#define FUNCTION_ATTRIBUTE static // __attribute__((noinline))
 
 #if HAS_IOSTREAM
 #include <iostream>
@@ -392,7 +392,9 @@ FUNCTION_ATTRIBUTE bool can_get_second(X x, Y y) {
   return e;
 }
 
-template <typename X, typename Y> FUNCTION_ATTRIBUTE bool check_va_arg() {
+template <typename X, typename Y>
+//FUNCTION_ATTRIBUTE
+bool check_va_arg() {
   X x;
   Y y;
 
@@ -409,7 +411,8 @@ template <typename X, typename Y> FUNCTION_ATTRIBUTE bool check_va_arg() {
 }
 
 template <typename X, typename Y>
-FUNCTION_ATTRIBUTE bool variadic_check_va_arg() {
+//FUNCTION_ATTRIBUTE
+bool variadic_check_va_arg() {
   X x;
   Y y;
 
