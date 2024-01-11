@@ -1,3 +1,5 @@
+#!/usr/bin/env lua
+
 local r = [[
 
 #ifndef EMIT_UNDEF_SYMBOLS
@@ -113,12 +115,15 @@ void variadic_NAME_call(LHSType x, RHSType y)
 ]]
 
 -- vector types currently failing on x64, might be related to -mavx
-local types = {'int', 'long', 'double', 'libcS',  '__m128', '__m256',}
+local types = {'int', 'long', 'double', 'libcS',  } -- '__m128', '__m256',}
 local non_promoted_types = {'char', 'short', 'float'}
 
-local disable_pairs = true
+local disable_pairs = false
 
-types = {'int', '__m128', }
+
+-- types = {'int', '__m128', }
+
+
 non_promoted_types = {}
 
 

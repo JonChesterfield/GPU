@@ -36,6 +36,8 @@ fi
 
 ./varargs.lua &> varargs.cpp
 
+./varargs_pairs.lua &> varargs_pairs.cpp
+
 EXPANDNONE="-expand-va-intrinsics-disable=true"
 EXPANDALL="-expand-va-intrinsics-split=true -expand-va-intrinsics-calls=true -expand-va-intrinsics-operations=true -expand-va-intrinsics-abi=true"
 
@@ -51,13 +53,28 @@ $IDIR/bin/clang++ $X64 varargs.opt.x64.ll -S -o varargs.x64.s
 $IDIR/bin/clang++ $X64 varargs.opt.x64.ll -o varargs.x64.out
 
 $IDIR/bin/clang++ $X64 $DEBUG -mllvm $EXPANDNONE varargs_pairs.cpp -O1 -emit-llvm -S -o varargs_pairs.x64.ll -Wno-varargs
+
 $IDIR/bin/opt -expand-va-intrinsics $EXPANDALL  varargs_pairs.x64.ll  -S -o varargs_pairs.lowered.x64.ll
-
 $IDIR/bin/opt $EXPANDNONE -O2  varargs_pairs.lowered.x64.ll  -S -o varargs_pairs.opt.x64.ll
-
 $IDIR/bin/clang++ $X64 varargs_pairs.opt.x64.ll -S -o varargs_pairs.x64.s
 $IDIR/bin/clang++ $X64 varargs_pairs.opt.x64.ll -o varargs_pairs.x64.out
 
+./varargs_pairs.x64.out
+RC=$?
+echo "X64 ret $RC"
+exit $RC
+
+$IDIR/bin/opt -expand-va-intrinsics -expand-va-intrinsics-split=false -expand-va-intrinsics-calls=false -expand-va-intrinsics-operations=true -expand-va-intrinsics-abi=false  varargs_pairs.hack.x64.ll  -S -o varargs_pairs.lowered.hack.x64.ll
+$IDIR/bin/opt $EXPANDNONE -O2  varargs_pairs.lowered.hack.x64.ll  -S -o varargs_pairs.opt.hack.x64.ll
+$IDIR/bin/clang++ $X64 varargs_pairs.opt.hack.x64.ll -S -o varargs_pairs.hack.x64.s
+$IDIR/bin/clang++ $X64 varargs_pairs.opt.hack.x64.ll -o varargs_pairs.hack.x64.out
+
+
+#$IDIR/bin/opt -expand-va-intrinsics -expand-va-intrinsics-split=false -expand-va-intrinsics-calls=false -expand-va-intrinsics-operations=false -expand-va-intrinsics-abi=false varargs_pairs.x64.ll  -S -o varargs_pairs.hack.x64.ll
+#$IDIR/bin/clang++ $X64 varargs_pairs.hack.x64.ll -o varargs_pairs.hack.x64.out
+
+
+exit 0
 
 set +e
 ./varargs.x64.out
