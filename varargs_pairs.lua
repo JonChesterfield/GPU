@@ -118,10 +118,9 @@ void variadic_NAME_call(LHSType x, RHSType y)
 local types = {'int', 'long', 'double', 'libcS',  } -- '__m128', '__m256',}
 local non_promoted_types = {'char', 'short', 'float'}
 
+-- reduce number of generated cases
 local disable_pairs = false
-
-
--- types = {'int', '__m128', }
+-- types = {'int', 'double', }
 
 
 non_promoted_types = {}

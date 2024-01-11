@@ -11,7 +11,7 @@ typedef __builtin_va_list va_list;
 
 // llvm can optimise out the calls entirely, this is a way
 // to encourage the lowering to execute at runtime
-#define FUNCTION_ATTRIBUTE static // __attribute__((noinline))
+#define FUNCTION_ATTRIBUTE static  __attribute__((noinline))
 
 #if HAS_IOSTREAM
 #include <iostream>
@@ -59,6 +59,15 @@ static std::ostream &operator<<(std::ostream &os, va_list const &rhs) {
 
 #endif
 
+#ifdef __i386__
+#define MIN_SLOT_ALIGN 4
+#define MAX_SLOT_ALIGN 0
+static void init_valist(void *BUFFER, va_list *out) { *out = (char *)BUFFER; }
+
+//__attribute__((used))
+static char *open_valist(va_list va) { return (char *)va; }
+#endif
+
 #ifdef __AMDGPU__
 #define MIN_SLOT_ALIGN 4
 #define MAX_SLOT_ALIGN 4
@@ -66,7 +75,6 @@ static void init_valist(void *BUFFER, va_list *out) { *out = (char *)BUFFER; }
 
 //__attribute__((used))
 static char *open_valist(va_list va) { return (char *)va; }
-
 #endif
 
 static unsigned distance(va_list before, va_list after) {
@@ -410,7 +418,7 @@ FUNCTION_ATTRIBUTE bool can_get_second(X x, Y y) {
 }
 
 template <typename X, typename Y>
-//FUNCTION_ATTRIBUTE
+FUNCTION_ATTRIBUTE
 bool check_va_arg() {
   X x;
   Y y;
@@ -428,7 +436,7 @@ bool check_va_arg() {
 }
 
 template <typename X, typename Y>
-//FUNCTION_ATTRIBUTE
+FUNCTION_ATTRIBUTE
 bool variadic_check_va_arg() {
   X x;
   Y y;
