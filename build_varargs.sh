@@ -81,6 +81,8 @@ echo "X64 ret $RC"
 RC=$?
 echo "X86 ret $RC"
 
+echo "$LOADER varargs_pairs.gcn.out"
+
 exit 0
 
 
