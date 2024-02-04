@@ -33,8 +33,8 @@ $CLANG $GENERIC --target=$TRIPLE -o - | egrep -v 'source_filename|; ModuleID' | 
 
 $LLVMDIR/opt -S --passes=expand-variadics < $OUTFILEDIR | grep '= type' | egrep -v '%struct.__va_list_tag = type|%struct.libcS' > $OUTFILEDIR.types
 sed -i 's/^/; CHECK: /g' $OUTFILEDIR.types
-mv $OUTFILEDIR.types $OUTFILEDIR.tmp.types
-(echo '' ; echo "; The types show the call frames"; cat $OUTFILEDIR.tmp.types) > $OUTFILEDIR.types
+(echo '' ; echo "; The types show the call frames"; cat $OUTFILEDIR.tmp.types) > $OUTFILEDIR.tmp.types
+mv $OUTFILEDIR.tmp.types $OUTFILEDIR.types
 
 sed -i '/target triple = \(.*\)/{
   s/target/target/g  
@@ -59,6 +59,11 @@ func
 OUTSUBDIR=X86
 TRIPLE=i386-unknown-linux-gnu
 TESTSUFFIX='-i386-linux'
+func
+
+OUTSUBDIR=X86
+TRIPLE=i386-apple-darwin
+TESTSUFFIX='-i386-darwin'
 func
 
 OUTSUBDIR=X86
