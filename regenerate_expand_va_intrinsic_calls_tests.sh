@@ -32,8 +32,9 @@ echo '; RUN: opt -S --passes=expand-variadics < %s | FileCheck %s' >> $OUTFILEDI
 $CLANG $GENERIC --target=$TRIPLE -o - | egrep -v 'source_filename|; ModuleID' | egrep -v 'llvm.ident|clang version' | egrep -v 'oclc_ABI_version' | egrep -v '; Function Attrs:' >> $OUTFILEDIR
 
 $LLVMDIR/opt -S --passes=expand-variadics < $OUTFILEDIR | grep '= type' | egrep -v '%struct.__va_list_tag = type|%struct.libcS' > $OUTFILEDIR.types
+
 sed -i 's/^/; CHECK: /g' $OUTFILEDIR.types
-(echo '' ; echo "; The types show the call frames"; cat $OUTFILEDIR.tmp.types) > $OUTFILEDIR.tmp.types
+(echo '' ; echo "; The types show the call frames"; cat $OUTFILEDIR.types) > $OUTFILEDIR.tmp.types
 mv $OUTFILEDIR.tmp.types $OUTFILEDIR.types
 
 sed -i '/target triple = \(.*\)/{
