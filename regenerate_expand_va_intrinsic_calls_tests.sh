@@ -47,24 +47,11 @@ rm $OUTFILEDIR.types
  llvm_regen.sh CodeGen/$OUTFILE
 }
 
-OUTSUBDIR=NVPTX
-TRIPLE=nvptx64-nvidia-cuda
-TESTSUFFIX=''
-func
 
-OUTSUBDIR=AMDGPU
-TRIPLE=amdgcn-amd-amdhsa
-TESTSUFFIX=''
-func
 
 OUTSUBDIR=X86
 TRIPLE=i386-unknown-linux-gnu
 TESTSUFFIX='-i386-linux'
-func
-
-OUTSUBDIR=X86
-TRIPLE=i386-apple-darwin
-TESTSUFFIX='-i386-darwin'
 func
 
 OUTSUBDIR=X86
@@ -73,7 +60,34 @@ TESTSUFFIX='-x64-linux'
 func
 
 OUTSUBDIR=X86
-TRIPLE=x86_64-unknown-windows-msvc
-TESTSUFFIX='-x64-msvc'
+TRIPLE=i386-apple-darwin
+TESTSUFFIX='-i386-darwin'
 func
 
+OUTSUBDIR=X86
+TRIPLE=x86_64-apple-darwin
+TESTSUFFIX='-x64-darwin'
+func
+
+
+# i386 vs 686?
+OUTSUBDIR=X86
+TRIPLE=i686-windows-msvc
+TESTSUFFIX='-i686-msvc'
+func
+
+# OUTSUBDIR=X86
+# TRIPLE=x86_64-unknown-windows-msvc
+# TESTSUFFIX='-x64-msvc'
+# func
+
+
+OUTSUBDIR=AMDGPU
+TRIPLE=amdgcn-amd-amdhsa
+TESTSUFFIX=''
+func
+
+OUTSUBDIR=NVPTX
+TRIPLE=nvptx64-nvidia-cuda
+TESTSUFFIX=''
+func
