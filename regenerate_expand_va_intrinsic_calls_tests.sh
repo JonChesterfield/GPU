@@ -44,6 +44,9 @@ sed -i '/target triple = \(.*\)/{
 
 rm $OUTFILEDIR.types
 
+sed -i 's/ dso_local / /g' $OUTFILEDIR
+sed -i 's/ local_unnamed_addr / /g' $OUTFILEDIR
+
  llvm_regen.sh CodeGen/$OUTFILE
 }
 
