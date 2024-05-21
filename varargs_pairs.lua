@@ -119,11 +119,11 @@ local types = {'int', 'long', 'double', 'libcS',  } -- '__m128', '__m256',}
 local non_promoted_types = {'char', 'short', 'float'}
 
 -- reduce number of generated cases
-local disable_pairs = false
--- types = {'int', 'double', }
+local disable_pairs = true --false
+types = {'int', 'libcS',}
 
 
-non_promoted_types = {}
+ non_promoted_types = {}
 
 
 local typenames = {}

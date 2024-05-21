@@ -59,7 +59,7 @@ rm $OUTFILEDIR.tmp
 
 
 
-$LLVMDIR/opt -S --passes=expand-variadics --expand-variadics-override=lowering < $OUTFILEDIR | grep '= type' | egrep -v '%struct.__va_list_tag = type|%struct.libcS' > $OUTFILEDIR.types
+$LLVMDIR/opt -S --passes=expand-variadics --expand-variadics-override=lowering < $OUTFILEDIR | grep '= type' | egrep -v '%struct.__va_list_tag = type|%struct.libcS = type' > $OUTFILEDIR.types
 
 sed -i 's/^/; CHECK: /g' $OUTFILEDIR.types
 (echo '' ; echo "; Check the variables are lowered to the locations this target expects"; echo ''; echo "; The types show the call frames"; cat $OUTFILEDIR.types) > $OUTFILEDIR.tmp.types
@@ -75,6 +75,7 @@ rm $OUTFILEDIR.types
 sed -i 's/ dso_local / /g' $OUTFILEDIR
 sed -i 's/ local_unnamed_addr / /g' $OUTFILEDIR
 sed -i 's/ local_unnamed_addr//g' $OUTFILEDIR
+
 
 
 llvm_regen.sh CodeGen/$OUTFILE
@@ -122,5 +123,10 @@ func
 
 OUTSUBDIR=NVPTX
 TRIPLE=nvptx64-nvidia-cuda
+TESTSUFFIX=''
+func
+
+OUTSUBDIR=WebAssembly
+TRIPLE=wasm32-unknown-unknown
 TESTSUFFIX=''
 func

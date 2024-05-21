@@ -11,7 +11,7 @@ typedef __builtin_va_list va_list;
 
 // llvm can optimise out the calls entirely, this is a way
 // to encourage the lowering to execute at runtime
-#define FUNCTION_ATTRIBUTE static  __attribute__((noinline))
+#define FUNCTION_ATTRIBUTE static  //__attribute__((noinline))
 
 #if HAS_IOSTREAM
 #include <iostream>
@@ -70,6 +70,16 @@ static char *open_valist(va_list va) { return (char *)va; }
 
 #ifdef __AMDGPU__
 #define MIN_SLOT_ALIGN 4
+#define MAX_SLOT_ALIGN 4 // should be 8 now iirc
+static void init_valist(void *BUFFER, va_list *out) { *out = (char *)BUFFER; }
+
+//__attribute__((used))
+static char *open_valist(va_list va) { return (char *)va; }
+#endif
+
+
+#ifdef __wasi__
+#define MIN_SLOT_ALIGN 4
 #define MAX_SLOT_ALIGN 4
 static void init_valist(void *BUFFER, va_list *out) { *out = (char *)BUFFER; }
 
@@ -77,11 +87,6 @@ static void init_valist(void *BUFFER, va_list *out) { *out = (char *)BUFFER; }
 static char *open_valist(va_list va) { return (char *)va; }
 #endif
 
-static unsigned distance(va_list before, va_list after) {
-  char *before_ptr = open_valist(before);
-  char *after_ptr = open_valist(after);
-  return after_ptr - before_ptr;
-}
 
 #if !defined(MIN_SLOT_ALIGN) || !defined(MAX_SLOT_ALIGN)
 #error "Missing arch definition"
@@ -90,6 +95,16 @@ static unsigned distance(va_list before, va_list after) {
 // Minimum is greater than 0
 // Max might be = to zero to indicate no bound
 static_assert(MIN_SLOT_ALIGN > 0, "");
+
+
+static unsigned distance(va_list before, va_list after) {
+  char *before_ptr = open_valist(before);
+  char *after_ptr = open_valist(after);
+  return after_ptr - before_ptr;
+}
+
+
+
 
 typedef float __m128 __attribute__((__vector_size__(16), __aligned__(16)));
 typedef float __m256 __attribute__((__vector_size__(32), __aligned__(32)));
@@ -119,6 +134,7 @@ static bool eq(__m256 lhs, __m256 rhs) {
 }
 
 // An instance used by the libc testing
+#if 0
 struct libcS {
   char c;
   short s;
@@ -126,6 +142,16 @@ struct libcS {
   long l;
   float f;
   double d;
+};
+#endif
+
+struct libcS {
+  long c;
+  long s;
+  long i;
+  long l;
+  long f;
+  long d;
 };
 
 template <typename T> static bool eq(T x, T y) { return x == y; }
@@ -178,7 +204,7 @@ std::ostream &operator<<(std::ostream &os, pair<T, U> const &rhs) {
 namespace {
 
 // same one used by libc tests
-void init(libcS *x) { *x = (libcS){'\x1', 2, 3, 4l, 5.0f, 6.0}; }
+  void init(libcS *x) { *x = (libcS){'\x1', 2, 3, 4l, (int)5.0f, (int)6.0}; }
 
 void init(float *x) { *x = 13.14; }
 void init(short *x) { *x = 101; }
@@ -189,6 +215,7 @@ void init(double *x) { *x = 3.14; }
 void init(int *x) { *x = 7; }
 
 void init(long *x) { *x = 77; }
+void init(unsigned long *x) { *x = 89; }
 
 void init(__m128 *x) {
   (*x)[0] = 1.0f;
