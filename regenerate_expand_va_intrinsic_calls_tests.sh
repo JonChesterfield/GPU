@@ -72,10 +72,21 @@ sed -i '/target triple = \(.*\)/{
 
 rm $OUTFILEDIR.types
 
-sed -i 's/ dso_local / /g' $OUTFILEDIR
-sed -i 's/ local_unnamed_addr / /g' $OUTFILEDIR
-sed -i 's/ local_unnamed_addr//g' $OUTFILEDIR
 
+sed -E -i \
+    -e 's/ dso_local / /g' \
+    -e 's/ local_unnamed_addr / /g' \
+    -e 's/ local_unnamed_addr//g' \
+    -e '/^![0-9]+ = !.*$/d' \
+    -e '/^!llvm.*$/d' \
+    -e 's/, !tbaa ![0-9]+$//g' \
+    -e 's/ #[0-9]+$//' \
+    -e '/^attributes #[0-9]+ =.*$/d' \
+    $OUTFILEDIR
+
+sed -E -i \
+    -e :L -e N -e 's/^\n$//' -e 't L' \
+    $OUTFILEDIR
 
 
 llvm_regen.sh CodeGen/$OUTFILE
